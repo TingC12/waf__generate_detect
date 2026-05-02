@@ -1190,12 +1190,12 @@
           <h1>WAF-AI BATTLE LAB</h1>
           <span class="live-pill"><span class="status-dot"></span>LIVE</span>
         </div>
-        <div class="subtitle">DDQN &amp; Transformer Attack-Defense Verification</div>
+        <div class="subtitle">LLM / DDQN Payload Simulation with Decoder + WAF Dual-Channel Detection</div>
       </div>
       <section class="status-cluster" aria-label="system status">
-        <div class="status-light"><span class="status-dot blue"></span><div><b>DDQN Agent</b><span>ACTIVE</span></div></div>
-        <div class="status-light"><span class="status-dot cyan"></span><div><b>TinyBERT</b><span>ONLINE</span></div></div>
-        <div class="status-light"><span class="status-dot"></span><div><b>ModSecurity</b><span>GUARDING</span></div></div>
+        <div class="status-light"><span class="status-dot blue"></span><div><b>LLM Generator</b><span>ACTIVE</span></div></div>
+        <div class="status-light"><span class="status-dot cyan"></span><div><b>DDQN Mutator</b><span>ONLINE</span></div></div>
+        <div class="status-light"><span class="status-dot"></span><div><b>Decoder + WAF</b><span>GUARDING</span></div></div>
         <div class="clock-card"><span>UTC TIME</span><strong id="utc-time">--:--:--</strong></div>
       </section>
     </header>
@@ -1212,30 +1212,30 @@
 
         <nav class="tabs" role="tablist" aria-label="attacker modes">
           <button class="tab active" type="button" role="tab" aria-selected="true" data-tab="presets">快速預設</button>
-          <button class="tab" type="button" role="tab" aria-selected="false" data-tab="builder">模塊組裝器</button>
+          <button class="tab" type="button" role="tab" aria-selected="false" data-tab="builder">固定樣本集</button>
         </nav>
 
         <div class="tab-stage">
           <div class="tab-page active" id="presets" role="tabpanel">
             <button class="attack-button selected" type="button" data-attack="normal" style="--attack-color: var(--green);">
               <span class="attack-icon">N</span>
-              <span class="attack-copy"><strong>普通留言 (Normal Traffic)</strong><span>綠色基準測試，驗證正常留言不被誤殺。</span></span>
+              <span class="attack-copy"><strong>Normal Request</strong><span>安全基準請求，雙通道均應維持放行。</span></span>
               <span class="attack-meta">BASELINE</span>
             </button>
-            <button class="attack-button" type="button" data-attack="traditional" style="--attack-color: var(--yellow);">
-              <span class="attack-icon">X</span>
-              <span class="attack-copy"><strong>傳統 XSS (Traditional XSS)</strong><span>黃色經典攻擊，檢查核心規則命中。</span></span>
-              <span class="attack-meta">CLASSIC</span>
+            <button class="attack-button" type="button" data-attack="encoded" style="--attack-color: var(--yellow);">
+              <span class="attack-icon">E</span>
+              <span class="attack-copy"><strong>Encoded Payload</strong><span>編碼樣本，檢查 Decoder 後 Path A 規則命中。</span></span>
+              <span class="attack-meta">SAMPLE A</span>
             </button>
-            <button class="attack-button" type="button" data-attack="rcp" style="--attack-color: var(--red);">
-              <span class="attack-icon">R</span>
-              <span class="attack-copy"><strong>RCP 繞過 XSS (RCP Bypass XSS)</strong><span>紅色研究方法 1，標定規則覆蓋缺口。</span></span>
-              <span class="attack-meta">METHOD 1</span>
+            <button class="attack-button" type="button" data-attack="obfuscated" style="--attack-color: var(--red);">
+              <span class="attack-icon">O</span>
+              <span class="attack-copy"><strong>Obfuscated Payload</strong><span>混淆樣本，觀察 Path A/Path B 分流結果差異。</span></span>
+              <span class="attack-meta">SAMPLE B</span>
             </button>
             <button class="attack-button" type="button" data-attack="ddqn" style="--attack-color: var(--blue);">
               <span class="attack-icon">D</span>
-              <span class="attack-copy"><strong>DDQN 突變 XSS (DDQN Mutated XSS)</strong><span>藍色 AI 驅動突變，模擬策略搜尋。</span></span>
-              <span class="attack-meta">AI MUTATE</span>
+              <span class="attack-copy"><strong>DDQN Mutated Payload</strong><span>DDQN 生成變異樣本，測試雙通道覆蓋缺口。</span></span>
+              <span class="attack-meta">SAMPLE C</span>
             </button>
           </div>
 
@@ -1259,31 +1259,31 @@
               </div>
             </div>
             <div class="builder-group">
-              <label>Payload 預覽</label>
-              <div class="payload-box" id="payload-preview">[REDACTED-PAYLOAD] class=encoding+fragment tech=UNI+SPLIT target=research-sandbox</div>
+              <label>Payload 樣本預覽（遮罩）</label>
+              <div class="payload-box" id="payload-preview">[ENCODED PAYLOAD SAMPLE A]</div>
             </div>
-            <button class="launch-custom" type="button" id="launch-custom">LAUNCH CUSTOM SAFE SAMPLE</button>
+            <button class="launch-custom" type="button" id="launch-custom">RUN FIXED SAFE SAMPLE</button>
           </div>
         </div>
 
         <section class="attack-log" aria-labelledby="attack-log-title">
           <header><strong id="attack-log-title">攻擊日誌</strong><span id="last-response">last response 42ms</span></header>
           <div class="attack-log-list" id="attack-log-list" aria-live="polite">
-            <div class="attack-log-line"><span>00:00:00</span><span class="result-pill blocked">BLOCKED</span><strong>Traditional XSS</strong><span>38ms</span></div>
-            <div class="attack-log-line"><span>00:00:00</span><span class="result-pill">BLOCKED</span><strong>Normal Traffic</strong><span>24ms</span></div>
+            <div class="attack-log-line"><span>00:00:00</span><span class="result-pill blocked">BLOCKED</span><strong>Encoded Payload</strong><span>38ms</span></div>
+            <div class="attack-log-line"><span>00:00:00</span><span class="result-pill">NOT EXECUTABLE</span><strong>Normal Request</strong><span>24ms</span></div>
           </div>
         </section>
       </section>
 
       <section class="battle-zone" aria-label="battle zone">
-        <div class="battle-label">PACKET TRANSIT</div>
+        <div class="battle-label">DUAL PATH CHECK</div>
       </section>
 
       <section class="panel defender-panel" id="defender-panel" aria-labelledby="defender-title">
         <div class="panel-title">
           <div>
             <h2 id="defender-title">DEFENDER PANEL</h2>
-            <p>ModSecurity 即時串接、TinyBERT 語意分析與流量統計同步更新。</p>
+            <p>Decoder + WAF Dual-Channel Detection：Path A 或 Path B 任一路徑命中即封鎖。</p>
           </div>
           <span class="micro-badge" id="defense-mode">GUARDING</span>
         </div>
@@ -1291,55 +1291,39 @@
         <div class="defender-grid">
           <div class="defense-stack">
             <section class="subpanel">
-              <div class="subhead"><h3>WAF 狀態卡</h3><span>2,847 rules loaded</span></div>
+              <div class="subhead"><h3>WAF 狀態卡</h3><span>dual-channel ready</span></div>
               <div class="waf-card-body">
                 <div class="waf-state">
-                  <div><strong>GUARDING</strong><span>ModSecurity running / anomaly mode</span></div>
+                  <div><strong>ACTIVE</strong><span>Decoder + CRS rule engine running</span></div>
                   <svg class="trend" viewBox="0 0 124 48" role="img" aria-label="detection trend">
                     <path d="M2 38 C18 34 24 24 38 25 S58 38 72 26 90 12 122 8" fill="none" stroke="#67f29a" stroke-width="3" stroke-linecap="round"/>
                     <path d="M2 46 L2 38 C18 34 24 24 38 25 S58 38 72 26 90 12 122 8 L122 46 Z" fill="rgba(103,242,154,.13)"/>
                   </svg>
                 </div>
                 <div class="rule-stack">
-                  <div class="stack-row"><span>CRS Core</span><div class="stack-bar"><i style="--w: 92%; --c: var(--green);"></i></div><b>1,428</b></div>
-                  <div class="stack-row"><span>XSS</span><div class="stack-bar"><i style="--w: 74%; --c: var(--yellow);"></i></div><b>642</b></div>
-                  <div class="stack-row"><span>Custom</span><div class="stack-bar"><i style="--w: 58%; --c: var(--cyan);"></i></div><b>517</b></div>
-                  <div class="stack-row"><span>Patch</span><div class="stack-bar"><i id="patch-stack" style="--w: 22%; --c: var(--blue);"></i></div><b id="patch-count">260</b></div>
+                  <div class="stack-row"><span>Decoder Status</span><div class="stack-bar"><i style="--w: 100%; --c: var(--green);"></i></div><b>ACTIVE</b></div>
+                  <div class="stack-row"><span>Recursive Depth</span><div class="stack-bar"><i style="--w: 50%; --c: var(--yellow);"></i></div><b>5 layers</b></div>
+                  <div class="stack-row"><span>Rule Engine</span><div class="stack-bar"><i style="--w: 86%; --c: var(--cyan);"></i></div><b>OWASP CRS</b></div>
+                  <div class="stack-row"><span>Decision Logic</span><div class="stack-bar"><i style="--w: 100%; --c: var(--blue);"></i></div><b>Path A OR B</b></div>
                 </div>
-                <div class="prob-row"><span>Detection</span><div class="prob-track"><i id="detect-bar" style="--w: 97.3%; --c: var(--green);"></i></div><b id="detect-rate">97.3%</b></div>
+                <div class="prob-row"><span>Detection</span><div class="prob-track"><i id="detect-bar" style="--w: 97.3%; --c: var(--green);"></i></div><b id="detect-rate">Path A∨B</b></div>
               </div>
             </section>
 
             <section class="subpanel waf-log">
-              <div class="subhead"><h3>ModSecurity 即時日誌流</h3><span>AUTO SCROLL</span></div>
+              <div class="subhead"><h3>Decoder + WAF 即時日誌流</h3><span>AUTO SCROLL</span></div>
               <div class="waf-log-list" id="waf-log-list" aria-live="polite">
-                <div class="waf-log-line"><span>00:00:00</span><span class="sev note">NOTE</span><strong>baseline request accepted</strong><span>id=1000</span></div>
-                <div class="waf-log-line"><span>00:00:00</span><span class="sev warn">WARN</span><strong>classic signature matched</strong><span>id=941100</span></div>
-                <div class="waf-log-line"><span>00:00:00</span><span class="sev info">INFO</span><strong>TinyBERT inference attached</strong><span>92ms</span></div>
+                <div class="waf-log-line"><span>00:00:00</span><span class="sev note">NOTE</span><strong>decoder normalized payload: [SAFE NORMALIZED]</strong><span>Path A not matched</span></div>
+                <div class="waf-log-line"><span>00:00:00</span><span class="sev warn">WARN</span><strong>Path B rule matched: CRS-941100</strong><span>final=BLOCKED</span></div>
               </div>
             </section>
           </div>
 
           <div class="defense-stack">
             <section class="subpanel ai-panel">
-              <div class="subhead"><h3>TinyBERT AI 分析面板</h3><span id="infer-time">inference 92ms</span></div>
+              <div class="subhead"><h3>Dual-Channel Detection 面板</h3><span id="infer-time">decoder pass 26ms</span></div>
               <div class="ai-body">
-                <div class="prob-bars">
-                  <div class="prob-row"><span>MALICIOUS</span><div class="prob-track"><i id="mal-bar" style="--w: 12%; --c: var(--red);"></i></div><b id="mal-val">12%</b></div>
-                  <div class="prob-row"><span>BENIGN</span><div class="prob-track"><i id="ben-bar" style="--w: 88%; --c: var(--green);"></i></div><b id="ben-val">88%</b></div>
-                </div>
-                <div>
-                  <div class="subhead" style="border:0;padding:0 0 8px;min-height:0;"><h3>注意力熱圖</h3><span>12 heads</span></div>
-                  <div class="heatmap" id="heatmap"></div>
-                </div>
-                <div>
-                  <div class="subhead" style="border:0;padding:0 0 8px;min-height:0;"><h3>Token 風險分析表</h3><span>masked tokens</span></div>
-                  <div class="token-table" id="token-table">
-                    <div class="token-row"><b>[comment_text]</b><span>LOW</span><span>0.08</span></div>
-                    <div class="token-row"><b>[user_agent]</b><span>LOW</span><span>0.11</span></div>
-                    <div class="token-row"><b>[masked_segment]</b><span>LOW</span><span>0.12</span></div>
-                  </div>
-                </div>
+                <div class="token-table" id="token-table"></div>
               </div>
             </section>
 
@@ -1356,29 +1340,29 @@
             </section>
 
             <section class="subpanel target-panel">
-              <div class="subhead"><h3>靶機監控 / Mining Impact</h3><span id="target-host-label">victim-vm-03</span></div>
+              <div class="subhead"><h3>Browser Verification</h3><span id="target-host-label">safe runtime simulation</span></div>
               <div class="target-body">
                 <div class="target-screen">
                   <div class="target-top">
-                    <span id="target-state" class="target-state">ISOLATED</span>
-                    <span>LAB SANDBOX / no real execution</span>
+                    <span id="target-state" class="target-state">NOT EXECUTABLE</span>
+                    <span>LAB SANDBOX / safe visual simulation only</span>
                   </div>
                   <div class="target-grid">
                     <div class="cpu-gauge" id="cpu-gauge" style="--cpu: 18; --gauge-color: var(--green);">
                       <span id="target-cpu">18%</span>
-                      <small>CPU</small>
+                      <small>VERDICT</small>
                     </div>
                     <div class="target-readouts">
-                      <div class="readout"><span>Memory</span><strong id="target-mem">31%</strong></div>
-                      <div class="readout"><span>Outbound</span><strong id="target-net">12 KB/s</strong></div>
-                      <div class="readout"><span>Shares</span><strong id="target-shares">0 accepted</strong></div>
-                      <div class="readout"><span>Miner</span><strong id="target-miner">inactive</strong></div>
+                      <div class="readout"><span>alert()</span><strong id="target-mem">not triggered</strong></div>
+                      <div class="readout"><span>cookie access</span><strong id="target-net">no</strong></div>
+                      <div class="readout"><span>fetch request</span><strong id="target-shares">no</strong></div>
+                      <div class="readout"><span>browser verdict</span><strong id="target-miner">not executable</strong></div>
                     </div>
                   </div>
                   <div class="process-table" id="process-table">
-                    <div class="process-row"><b>nginx-lab</b><span>2%</span><span>OK</span></div>
-                    <div class="process-row"><b>app-worker</b><span>6%</span><span>OK</span></div>
-                    <div class="process-row"><b>miner-sim</b><span>0%</span><span>OFF</span></div>
+                    <div class="process-row"><b>Incoming Payload</b><span id="raw-payload-label">[NORMAL REQUEST SAMPLE]</span><span>RAW</span></div>
+                    <div class="process-row"><b>Decoder Output</b><span id="decoded-label">[NORMALIZED SAFE REQUEST]</span><span>DECODED</span></div>
+                    <div class="process-row"><b>Final Decision</b><span id="final-decision-label">NOT EXECUTABLE</span><span>RESULT</span></div>
                   </div>
                 </div>
                 <div>
@@ -1404,10 +1388,11 @@
         </div>
       </section>
       <section class="dock research-tags" aria-label="research tags">
-        <span>#規則覆蓋測試法</span>
-        <span>#Dueling DDQN</span>
-        <span>#TinyBERT</span>
-        <span>#ModSecurity即時串接</span>
+        <span>#LLMGeneratedPayload</span>
+        <span>#DDQNMutation</span>
+        <span>#DecoderWAF</span>
+        <span>#DualChannelDetection</span>
+        <span>#PathA_OR_PathB</span>
       </section>
       <section class="dock dock-actions">
         <button type="button" id="export-logs">EXPORT LOGS</button>
@@ -1418,319 +1403,51 @@
 
   <script>
     const attacks = {
-      normal: {
-        name: "Normal Traffic",
-        label: "普通留言",
-        color: "var(--green)",
-        result: "BLOCKED",
-        resultClass: "blocked",
-        response: [18, 48],
-        severity: "NOTE",
-        severityClass: "note",
-        log: "baseline request accepted",
-        rule: "id=1000",
-        mal: 12,
-        detect: 97.3,
-        patch: 260,
-        bypass: false,
-        sample: "[REDACTED-PAYLOAD] class=normal tech=baseline target=research-sandbox",
-        tokens: [["[comment_text]", "LOW", "0.08"], ["[user_agent]", "LOW", "0.11"], ["[masked_segment]", "LOW", "0.12"]]
-      },
-      traditional: {
-        name: "Traditional XSS",
-        label: "傳統 XSS",
-        color: "var(--yellow)",
-        result: "BLOCKED",
-        resultClass: "blocked",
-        response: [34, 88],
-        severity: "WARN",
-        severityClass: "warn",
-        log: "classic signature matched",
-        rule: "id=941100",
-        mal: 91,
-        detect: 98.9,
-        patch: 260,
-        bypass: false,
-        sample: "[REDACTED-PAYLOAD] class=traditional-xss tech=signature-check target=research-sandbox",
-        tokens: [["[event_token]", "HIGH", "0.91"], ["[script_marker]", "HIGH", "0.88"], ["[masked_segment]", "MED", "0.64"]]
-      },
-      rcp: {
-        name: "RCP Bypass XSS",
-        label: "RCP 繞過 XSS",
-        color: "var(--red)",
-        result: "BYPASSED",
-        resultClass: "bypassed",
-        response: [86, 156],
-        severity: "CRIT",
-        severityClass: "crit",
-        log: "coverage gap candidate escalated",
-        rule: "gap=RCP-17",
-        mal: 84,
-        detect: 93.4,
-        patch: 274,
-        bypass: true,
-        sample: "[REDACTED-PAYLOAD] class=rcp-bypass tech=coverage-gap target=research-sandbox",
-        tokens: [["[context_wrap]", "HIGH", "0.84"], ["[split_token]", "MED", "0.71"], ["[masked_segment]", "HIGH", "0.79"]]
-      },
-      ddqn: {
-        name: "DDQN Mutated XSS",
-        label: "DDQN 突變 XSS",
-        color: "var(--blue)",
-        result: "BYPASSED",
-        resultClass: "bypassed",
-        response: [102, 220],
-        severity: "CRIT",
-        severityClass: "crit",
-        log: "DDQN mutation exposed rule gap",
-        rule: "gap=DDQN-42",
-        mal: 88,
-        detect: 94.1,
-        patch: 286,
-        bypass: true,
-        sample: "[REDACTED-PAYLOAD] class=ddqn-mutated tech=policy-search target=research-sandbox",
-        tokens: [["[mutation_path]", "HIGH", "0.88"], ["[q_action]", "HIGH", "0.82"], ["[masked_segment]", "MED", "0.69"]]
-      }
+      normal: {name:"Normal Request",color:"var(--green)",response:[18,42],sample:"[NORMAL REQUEST SAMPLE]",decoded:"[NORMALIZED SAFE REQUEST]",pathA:{crs:false,js:false,header:false,blocked:false},pathB:{crs:false,blocked:false},browser:{alert:false,cookie:false,fetch:false}},
+      encoded: {name:"Encoded Payload",color:"var(--yellow)",response:[34,88],sample:"[ENCODED PAYLOAD SAMPLE A]",decoded:"[DECODED PAYLOAD SAMPLE A]",pathA:{crs:true,js:false,header:true,blocked:true},pathB:{crs:false,blocked:false},browser:{alert:true,cookie:false,fetch:false}},
+      obfuscated: {name:"Obfuscated Payload",color:"var(--red)",response:[86,150],sample:"[OBFUSCATED SAMPLE C]",decoded:"[NORMALIZED OBFUSCATED SAMPLE C]",pathA:{crs:false,js:true,header:false,blocked:true},pathB:{crs:false,blocked:false},browser:{alert:true,cookie:true,fetch:false}},
+      ddqn: {name:"DDQN Mutated Payload",color:"var(--blue)",response:[90,180],sample:"[DDQN MUTATED SAMPLE B]",decoded:"[DECODED DDQN MUTATED SAMPLE B]",pathA:{crs:false,js:false,header:false,blocked:false},pathB:{crs:false,blocked:false},browser:{alert:true,cookie:true,fetch:true}}
     };
-
-    const state = {
-      total: 128,
-      blocked: 119,
-      bypassed: 9,
-      shares: 0,
-      autoTimer: null
-    };
-
-    const $ = (selector) => document.querySelector(selector);
-    const $$ = (selector) => Array.from(document.querySelectorAll(selector));
-    const rand = (min, max) => Math.floor(Math.random() * (max - min + 1)) + min;
-
-    function nowUTC() {
-      return new Date().toISOString().slice(11, 19) + " UTC";
+    const state={total:128,blocked:119,bypassed:9,autoTimer:null};
+    const $ = s => document.querySelector(s); const $$ = s => Array.from(document.querySelectorAll(s));
+    const rand=(a,b)=>Math.floor(Math.random()*(b-a+1))+a;
+    const nowUTC=()=>new Date().toISOString().slice(11,19)+" UTC";
+    const setClock=()=>$("#utc-time").textContent=nowUTC();
+    function dualPanelRows(c){
+      return [
+        ["Incoming Payload", c.sample, "SAFE"],
+        ["Decoder Output", c.decoded, "NORMALIZED"],
+        ["Path A: CRS", c.pathA.crs?"matched":"not matched", c.pathA.crs?"BLOCK":"PASS"],
+        ["Path A: JS Obfuscation", c.pathA.js?"matched":"not matched", c.pathA.js?"BLOCK":"PASS"],
+        ["Path A: Header Check", c.pathA.header?"matched":"not matched", c.pathA.header?"BLOCK":"PASS"],
+        ["Path B: CRS", c.pathB.crs?"matched":"not matched", c.pathB.crs?"BLOCK":"PASS"]
+      ].map(r=>`<div class="token-row"><b>${r[0]}</b><span>${r[1]}</span><span>${r[2]}</span></div>`).join('');
     }
-
-    function setClock() {
-      $("#utc-time").textContent = nowUTC();
+    function addAttackLog(c,response,result){const line=document.createElement('div');line.className='attack-log-line';line.innerHTML=`<span>${nowUTC().replace(" UTC","")}</span><span class="result-pill ${result.includes("BLOCKED")?"blocked":result.includes("SUCCESSFUL")?"bypassed":""}">${result}</span><strong>${c.name}</strong><span>${response}ms</span>`;const list=$("#attack-log-list");list.prepend(line);while(list.children.length>7)list.lastElementChild.remove();}
+    function addWafLog(c,result){const mk=(msg,sev='info')=>`<div class="waf-log-line"><span>${nowUTC().replace(" UTC","")}</span><span class="sev ${sev}">${sev.toUpperCase()}</span><strong>${msg}</strong><span>dual-channel</span></div>`;const list=$("#waf-log-list");list.insertAdjacentHTML('afterbegin',mk(`decoder normalized payload: ${c.decoded}`,'note')+mk(`Path A rule ${c.pathA.blocked?'matched':'not matched'}`,c.pathA.blocked?'warn':'info')+mk(`Path B rule ${c.pathB.blocked?'matched':'not matched'}`,c.pathB.blocked?'warn':'info')+mk(`final decision: ${result}`,result.includes('BLOCKED')?'warn':'note'));while(list.children.length>12)list.lastElementChild.remove();}
+    function updateScenario(c,response){
+      const browserExecutable = c.browser.alert || c.browser.cookie || c.browser.fetch;
+      const wafBlocked = c.pathA.blocked || c.pathB.blocked;
+      const finalResult = wafBlocked ? 'BLOCKED BY DECODER+WAF' : (browserExecutable ? 'SUCCESSFUL BYPASS' : 'NOT EXECUTABLE');
+      $('#token-table').innerHTML = dualPanelRows(c)+`<div class="token-row"><b>Final Decision</b><span>${wafBlocked?'Path A OR Path B blocked':'Path A OR Path B clear'}</span><span>${finalResult}</span></div>`;
+      $('#raw-payload-label').textContent=c.sample; $('#decoded-label').textContent=c.decoded; $('#final-decision-label').textContent=finalResult;
+      $('#target-mem').textContent=c.browser.alert?'triggered':'not triggered'; $('#target-net').textContent=c.browser.cookie?'yes':'no'; $('#target-shares').textContent=c.browser.fetch?'yes':'no'; $('#target-miner').textContent=browserExecutable?'executable':'not executable';
+      $('#target-state').textContent=finalResult; $('#target-state').classList.toggle('hot', finalResult==='SUCCESSFUL BYPASS');
+      $('#target-cpu').textContent=browserExecutable?'100%':'0%'; $('#cpu-gauge').style.setProperty('--cpu',browserExecutable?100:0); $('#cpu-gauge').style.setProperty('--gauge-color',browserExecutable?'var(--red)':'var(--green)');
+      state.total+=1; if(finalResult==='SUCCESSFUL BYPASS') state.bypassed+=1; else if(wafBlocked) state.blocked+=1;
+      $('#stat-total').textContent=state.total; $('#stat-blocked').textContent=state.blocked; $('#stat-bypassed').textContent=state.bypassed; $('#stat-response').textContent=`${response}ms`;$('#last-response').textContent=`last response ${response}ms`;
+      $('#infer-time').textContent=`decoder pass ${rand(18,44)}ms`; $('#defense-mode').textContent=wafBlocked?'BLOCKED':'MONITORING';
+      addAttackLog(c,response,finalResult); addWafLog(c,finalResult);
     }
-
-    function addHeatmap() {
-      const heatmap = $("#heatmap");
-      heatmap.innerHTML = "";
-      for (let i = 0; i < 72; i++) {
-        const cell = document.createElement("span");
-        cell.className = "heat";
-        const intensity = rand(8, 96);
-        const color = intensity > 72 ? "var(--red)" : intensity > 48 ? "var(--yellow)" : "var(--cyan)";
-        cell.style.setProperty("--heat", `${intensity}%`);
-        cell.style.setProperty("--heat-color", color);
-        heatmap.appendChild(cell);
-      }
-    }
-
-    function setTokenTable(rows) {
-      $("#token-table").innerHTML = rows.map(([token, risk, score]) => `
-        <div class="token-row"><b>${token}</b><span>${risk}</span><span>${score}</span></div>
-      `).join("");
-    }
-
-    function addAttackLog(config, response) {
-      const line = document.createElement("div");
-      line.className = "attack-log-line";
-      line.innerHTML = `
-        <span>${nowUTC().replace(" UTC", "")}</span>
-        <span class="result-pill ${config.resultClass}">${config.result}</span>
-        <strong>${config.name}</strong>
-        <span>${response}ms</span>
-      `;
-      const list = $("#attack-log-list");
-      list.prepend(line);
-      while (list.children.length > 7) list.lastElementChild.remove();
-    }
-
-    function addWafLog(config, response) {
-      const line = document.createElement("div");
-      line.className = "waf-log-line";
-      line.innerHTML = `
-        <span>${nowUTC().replace(" UTC", "")}</span>
-        <span class="sev ${config.severityClass}">${config.severity}</span>
-        <strong>${config.log}</strong>
-        <span>${config.rule} ${response}ms</span>
-      `;
-      const list = $("#waf-log-list");
-      list.prepend(line);
-      while (list.children.length > 12) list.lastElementChild.remove();
-      list.scrollTop = 0;
-    }
-
-    function addTargetLog(status, message) {
-      const line = document.createElement("div");
-      line.className = "target-log-line";
-      line.innerHTML = `
-        <span>${nowUTC().replace(" UTC", "")}</span>
-        <span class="sev ${status === "CRIT" ? "crit" : status === "WARN" ? "warn" : status === "INFO" ? "info" : "note"}">${status}</span>
-        <b>${message}</b>
-      `;
-      const list = $("#target-log-list");
-      list.prepend(line);
-      while (list.children.length > 9) list.lastElementChild.remove();
-      list.scrollTop = 0;
-    }
-
-    function updateTargetMachine(config, response) {
-      const active = config.bypass;
-      const cpu = active ? rand(82, 97) : config.name === "Traditional XSS" ? rand(31, 48) : rand(8, 24);
-      const mem = active ? rand(62, 81) : rand(28, 43);
-      const net = active ? rand(180, 640) : rand(6, 44);
-      const processCpu = active ? rand(74, 92) : 0;
-      const gaugeColor = active ? "var(--red)" : cpu > 42 ? "var(--yellow)" : "var(--green)";
-
-      if (active) state.shares += rand(1, 4);
-
-      $("#target-state").textContent = active ? "MINER-SIM ACTIVE" : "ISOLATED";
-      $("#target-state").classList.toggle("hot", active);
-      $("#target-cpu").textContent = `${cpu}%`;
-      $("#cpu-gauge").style.setProperty("--cpu", cpu);
-      $("#cpu-gauge").style.setProperty("--gauge-color", gaugeColor);
-      $("#target-mem").textContent = `${mem}%`;
-      $("#target-net").textContent = active ? `${net} KB/s` : `${net} KB/s`;
-      $("#target-shares").textContent = `${state.shares} accepted`;
-      $("#target-miner").textContent = active ? "sim-active" : "inactive";
-      $("#process-table").innerHTML = `
-        <div class="process-row"><b>nginx-lab</b><span>${rand(1, 5)}%</span><span>OK</span></div>
-        <div class="process-row"><b>app-worker</b><span>${rand(4, 12)}%</span><span>OK</span></div>
-        <div class="process-row"><b>miner-sim</b><span>${processCpu}%</span><span>${active ? "HOT" : "OFF"}</span></div>
-      `;
-
-      if (active) {
-        addTargetLog("CRIT", `挖礦模擬成功: CPU ${cpu}%, share accepted, resp ${response}ms`);
-      } else if (config.name === "Traditional XSS") {
-        addTargetLog("WARN", `payload blocked before target execution, transient CPU ${cpu}%`);
-      } else {
-        addTargetLog("NOTE", `no target execution, CPU baseline ${cpu}%`);
-      }
-    }
-
-    function updateMetrics(config, response) {
-      state.total += 1;
-      if (config.bypass) state.bypassed += 1;
-      else state.blocked += 1;
-
-      const benign = Math.max(2, 100 - config.mal);
-      $("#mal-bar").style.setProperty("--w", `${config.mal}%`);
-      $("#ben-bar").style.setProperty("--w", `${benign}%`);
-      $("#mal-val").textContent = `${config.mal}%`;
-      $("#ben-val").textContent = `${benign}%`;
-      $("#infer-time").textContent = `inference ${rand(72, 142)}ms`;
-      $("#detect-rate").textContent = `${config.detect.toFixed(1)}%`;
-      $("#detect-bar").style.setProperty("--w", `${config.detect}%`);
-      $("#patch-count").textContent = config.patch;
-      $("#patch-stack").style.setProperty("--w", `${Math.min(88, 18 + (config.patch - 250) / 1.2)}%`);
-
-      $("#stat-total").textContent = state.total;
-      $("#stat-blocked").textContent = state.blocked;
-      $("#stat-bypassed").textContent = state.bypassed;
-      $("#stat-response").textContent = `${response}ms`;
-      $("#last-response").textContent = `last response ${response}ms`;
-
-      const epsilon = Math.max(0.04, 0.182 - state.total * 0.0003);
-      const lr = 0.0005 + Math.random() * 0.0005;
-      const batch = [32, 64, 96, 128][rand(0, 3)];
-      $("#epsilon").textContent = epsilon.toFixed(3);
-      $("#epsilon-meter").style.setProperty("--w", `${Math.round(epsilon * 100)}%`);
-      $("#learning-rate").textContent = lr.toFixed(4);
-      $("#lr-meter").style.setProperty("--w", `${Math.round(lr * 100000)}%`);
-      $("#batch-size").textContent = batch;
-      $("#batch-meter").style.setProperty("--w", `${Math.round(batch / 1.28)}%`);
-
-      setTokenTable(config.tokens);
-      addHeatmap();
-      updateTargetMachine(config, response);
-    }
-
-    function launchPacket(config, storm = false) {
-      const zone = $(".battle-zone");
-      const packets = storm ? rand(4, 8) : 1;
-      for (let i = 0; i < packets; i++) {
-        const packet = document.createElement("span");
-        packet.className = "packet";
-        packet.style.setProperty("--packet-color", config.color);
-        packet.style.setProperty("--drift", `${rand(-24, 24)}px`);
-        packet.style.animationDelay = `${i * 95}ms`;
-        zone.appendChild(packet);
-        packet.addEventListener("animationend", () => packet.remove(), { once: true });
-      }
-
-      setTimeout(() => {
-        const blast = document.createElement("span");
-        blast.className = "explosion";
-        blast.style.setProperty("--blast-color", config.color);
-        zone.appendChild(blast);
-        blast.addEventListener("animationend", () => blast.remove(), { once: true });
-        const defender = $("#defender-panel");
-        defender.classList.add("flash");
-        setTimeout(() => defender.classList.remove("flash"), 520);
-      }, 1120);
-    }
-
-    function runAttack(type, storm = false) {
-      const config = attacks[type];
-      const response = rand(config.response[0], config.response[1]);
-      $$(".attack-button").forEach(btn => btn.classList.toggle("selected", btn.dataset.attack === type));
-      $("#payload-preview").textContent = config.sample;
-      $("#defense-mode").textContent = config.bypass ? "PATCH QUEUE" : "GUARDING";
-      launchPacket(config, storm);
-      setTimeout(() => {
-        addAttackLog(config, response);
-        addWafLog(config, response);
-        updateMetrics(config, response);
-      }, 1220);
-    }
-
-    function randomAttackType() {
-      const keys = ["normal", "traditional", "rcp", "ddqn"];
-      return keys[rand(0, keys.length - 1)];
-    }
-
-    function scheduleAutoTraffic() {
-      clearTimeout(state.autoTimer);
-      state.autoTimer = setTimeout(() => {
-        const storm = Math.random() > 0.72;
-        runAttack(randomAttackType(), storm);
-        scheduleAutoTraffic();
-      }, rand(2000, 5000));
-    }
-
-    $$(".tab").forEach(tab => {
-      tab.addEventListener("click", () => {
-        const target = tab.dataset.tab;
-        $$(".tab").forEach(item => {
-          const selected = item === tab;
-          item.classList.toggle("active", selected);
-          item.setAttribute("aria-selected", String(selected));
-        });
-        $$(".tab-page").forEach(page => page.classList.toggle("active", page.id === target));
-      });
-    });
-
-    $$(".attack-button").forEach(btn => {
-      btn.addEventListener("click", () => runAttack(btn.dataset.attack, btn.dataset.attack === "ddqn"));
-    });
-
-    $$(".opt").forEach(btn => {
-      btn.addEventListener("click", () => {
-        btn.classList.toggle("active");
-        const classes = $$(".opt.active").map(item => item.textContent.trim()).join("+");
-        $("#payload-preview").textContent = `[REDACTED-PAYLOAD] class=${classes || "none"} target=research-sandbox`;
-      });
-    });
-
-    $("#launch-custom").addEventListener("click", () => runAttack("ddqn", true));
-    $("#export-logs").addEventListener("click", () => addWafLog({ ...attacks.normal, severity: "INFO", severityClass: "info", log: "operator exported sanitized logs", rule: "export=local" }, rand(12, 28)));
-    $("#settings").addEventListener("click", () => addWafLog({ ...attacks.normal, severity: "NOTE", severityClass: "note", log: "settings panel opened in simulation", rule: "settings=demo" }, rand(12, 28)));
-
-    setClock();
-    setInterval(setClock, 1000);
-    addHeatmap();
-    scheduleAutoTraffic();
+    function launchPacket(c){const zone=$(".battle-zone");const packet=document.createElement('span');packet.className='packet';packet.style.setProperty('--packet-color',c.color);packet.style.setProperty('--drift',`${rand(-24,24)}px`);zone.appendChild(packet);packet.addEventListener('animationend',()=>packet.remove(),{once:true});}
+    function runAttack(type){const c=attacks[type];const response=rand(c.response[0],c.response[1]);$$('.attack-button').forEach(btn=>btn.classList.toggle('selected',btn.dataset.attack===type));$('#payload-preview').textContent=c.sample;launchPacket(c);setTimeout(()=>updateScenario(c,response),1220);}
+    $$('.tab').forEach(tab=>tab.addEventListener('click',()=>{const target=tab.dataset.tab;$$('.tab').forEach(i=>{const sel=i===tab;i.classList.toggle('active',sel);i.setAttribute('aria-selected',String(sel));});$$('.tab-page').forEach(p=>p.classList.toggle('active',p.id===target));}));
+    $$('.attack-button').forEach(btn=>btn.addEventListener('click',()=>runAttack(btn.dataset.attack)));
+    $$('.opt').forEach(btn=>btn.addEventListener('click',()=>btn.classList.toggle('active')));
+    $('#launch-custom').addEventListener('click',()=>runAttack('ddqn'));
+    $('#export-logs').addEventListener('click',()=>addWafLog(attacks.normal,'operator exported sanitized logs'));
+    $('#settings').addEventListener('click',()=>addWafLog(attacks.normal,'settings panel opened in simulation'));
+    setClock(); setInterval(setClock,1000); runAttack('normal');
   </script>
 </body>
 </html>
