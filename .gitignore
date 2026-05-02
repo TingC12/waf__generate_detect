@@ -1,0 +1,5 @@
+screenshots/
+*.tmp
+*.log
+node_modules/
+
