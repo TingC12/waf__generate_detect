@@ -299,14 +299,21 @@
               <span class="attack-copy"><strong>Normal Request</strong><span>安全基準請求，用來確認正常流量不會被誤擋。</span></span>
               <span class="attack-meta">BASELINE</span>
             </button>
-            <button class="attack-button" type="button" data-attack="encodedObfuscated" style="--attack-color: var(--yellow);">
-              <span class="attack-icon">E/O</span>
-              <span class="attack-copy"><strong>Encoded + Obfuscated Payload</strong><span>把編碼與混淆合併成同一類，測試 Decoder 還原後能否命中。</span></span>
-              <span class="attack-meta">SAMPLE A</span>
-            </button>
             <button class="attack-button" type="button" data-attack="llm" style="--attack-color: var(--violet);">
               <span class="attack-icon">L</span>
-              <span class="attack-copy"><strong>LLM Generated Malicious Payload</strong><span>LLM 直接生成的惡意樣本，Normal WAF 與 Decoder + WAF 都能阻擋。</span></span>
+              <span class="attack-copy">
+                <strong>LLM Generated Malicious Payload</strong>
+                <span>LLM 直接生成的惡意樣本，Normal WAF 與 Decoder + WAF 都能阻擋。</span>
+              </span>
+              <span class="attack-meta">SAMPLE A</span>
+            </button>
+
+            <button class="attack-button" type="button" data-attack="encodedObfuscated" style="--attack-color: var(--yellow);">
+              <span class="attack-icon">E/O</span>
+              <span class="attack-copy">
+                <strong>Encoded + Obfuscated Payload</strong>
+                <span>把編碼與混淆合併成同一類，測試 Decoder 還原後能否命中。</span>
+              </span>
               <span class="attack-meta">SAMPLE B</span>
             </button>
             <button class="attack-button" type="button" data-attack="ddqn" style="--attack-color: var(--blue);">
@@ -689,6 +696,7 @@
       const browserExecutable = c.browser.alert || c.browser.cookie || c.browser.fetch;
       const normalWafBlocked = Boolean(c.normalWaf && c.normalWaf.blocked);
       const decoderBlocked = c.pathA.blocked || c.pathB.blocked;
+      const isNormalWafOnly = mode === "normal-waf";
 
       // ===== 左邊：Normal WAF =====
       let normalResult = "ALLOWED";
@@ -707,32 +715,37 @@
       document.getElementById("normal-result").textContent = normalResult;
       document.getElementById("normal-result").className =
         normalResult === "BYPASSED" ? "compare-result bypass" : "compare-result block";
-
-      // ===== 右邊：Decoder + WAF =====
-      let decoderResult = "ALLOWED";
-      if (decoderBlocked) decoderResult = "BLOCKED";
-      else if (browserExecutable) decoderResult = "BYPASSED";
-
-      document.getElementById("decoder-input").textContent = c.sample;
-
-      document.getElementById("decoder-path-a").textContent =
-        c.pathA.blocked ? "matched after decoding / normalization" : "not matched";
-
-      document.getElementById("decoder-path-b").textContent =
-        c.pathB.blocked ? "raw CRS matched" : "not matched";
-
-      document.getElementById("decoder-result").textContent = decoderResult;
-      document.getElementById("decoder-result").className =
-        decoderResult === "BYPASSED" ? "compare-result bypass" : "compare-result block";
-
-      // 卡片亮起
       document.getElementById("normal-compare-card").classList.remove("dimmed");
-      document.getElementById("decoder-compare-card").classList.remove("dimmed");
+
+      // STEP 4 只測 Normal WAF，右邊 Decoder + WAF 不應該同步顯示 BYPASSED
+      if (isNormalWafOnly) {
+        document.getElementById("decoder-compare-card").classList.add("dimmed");
+        document.getElementById("decoder-input").textContent = "[SAME PAYLOAD - NOT TESTED YET]";
+        document.getElementById("decoder-path-a").textContent = "decoder disabled in this step";
+        document.getElementById("decoder-path-b").textContent = "waiting for Step 5";
+        document.getElementById("decoder-result").textContent = "WAITING";
+        document.getElementById("decoder-result").className = "compare-result block";
+      } else {
+        // ===== 右邊：Decoder + WAF =====
+        let decoderResult = "ALLOWED";
+        if (decoderBlocked) decoderResult = "BLOCKED";
+        else if (browserExecutable) decoderResult = "BYPASSED";
+
+        document.getElementById("decoder-input").textContent = c.sample;
+        document.getElementById("decoder-path-a").textContent =
+          c.pathA.blocked ? "matched after decoding / normalization" : "not matched";
+        document.getElementById("decoder-path-b").textContent =
+          c.pathB.blocked ? "raw CRS matched" : "not matched";
+        document.getElementById("decoder-result").textContent = decoderResult;
+        document.getElementById("decoder-result").className =
+          decoderResult === "BYPASSED" ? "compare-result bypass" : "compare-result block";
+        document.getElementById("decoder-compare-card").classList.remove("dimmed");
+      }
 
       // ===== 系統總結邏輯 =====
-      const finalResult = decoderBlocked
-        ? "BLOCKED BY DECODER+WAF"
-        : (browserExecutable ? "SUCCESSFUL BYPASS" : "ALLOWED");
+      const finalResult = isNormalWafOnly
+        ? "BYPASSED NORMAL WAF"
+        : (decoderBlocked ? "BLOCKED BY DECODER+WAF" : (browserExecutable ? "SUCCESSFUL BYPASS" : "ALLOWED"));
 
       $("#payload-preview").textContent = c.sample;
       $("#token-table").innerHTML = dualPanelRows(c, finalResult);
@@ -809,7 +822,7 @@
       addAttackLog(llmPayload, rand(40,80), "GENERATED");
       addWafLogLine("LLM generated sanitized payload candidate", "info", "llm");
       $("#payload-preview").textContent = llmPayload.sample;
-      await sleep(1300);
+      await sleep(2200);
 
       setPhase("STEP 2: DDQN MUTATION PRODUCES STRONGER PAYLOAD...");
       setProgress({llm: 100, ddqn: 55, browser: 0, llmText: "done", ddqnText: "mutating", browserText: "pending"});
@@ -827,7 +840,7 @@
       addAttackLog(ddqnPayload, rand(80,140), "MUTATED");
       addWafLogLine("DDQN mutation selected a bypass candidate", "info", "ddqn");
       $("#payload-preview").textContent = ddqnPayload.sample;
-      await sleep(1500);
+      await sleep(2600);
 
       setPhase("STEP 3: BROWSER VERIFICATION CONFIRMS REAL ATTACK BEHAVIOR...");
       setProgress({llm: 100, ddqn: 100, browser: 100, llmText: "done", ddqnText: "done", browserText: "verified"});
@@ -837,7 +850,7 @@
       $("#final-decision-label").textContent = "BROWSER VERIFIED";
       addTargetLog("alert / cookie access / fetch behavior detected in safe sandbox", "crit");
       addAttackLog(ddqnPayload, rand(50,90), "EXECUTABLE");
-      await sleep(1500);
+      await sleep(2600);
 
       setPhase("STEP 4: NORMAL WAF TEST → SAME PAYLOAD BYPASSES");
       $("#waf-mode-label").textContent = "normal waf only";
@@ -854,7 +867,7 @@
       launchPacket(normalWafBypass, true);
       setTimeout(() => updateScenario(normalWafBypass, rand(90,160), "normal-waf"), 450);
       setTimeout(() => setCompareNormalBypass(normalWafBypass.sample), 620);
-      await sleep(1900);
+      await sleep(3200);
 
       setPhase("STEP 5: ENABLE DECODER + WAF → SAME PAYLOAD BLOCKED");
       $("#waf-mode-label").textContent = "dual-channel ready";
@@ -872,7 +885,7 @@
       launchPacket(decoderBlocked, true);
       setTimeout(() => updateScenario(decoderBlocked, rand(60,120), "decoder"), 450);
       setTimeout(() => setCompareDecoderBlock(decoderBlocked.sample), 620);
-      await sleep(1800);
+      await sleep(2600);
 
       setPhase("RESULT: LLM + DDQN PAYLOAD CAN BYPASS NORMAL WAF, BUT DECODER + WAF BLOCKS THE SAME PAYLOAD");
       $("#target-state").textContent = "BLOCKED";
