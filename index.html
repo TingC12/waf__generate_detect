@@ -296,22 +296,22 @@
           <div class="tab-page active" id="presets" role="tabpanel">
             <button class="attack-button selected" type="button" data-attack="normal" style="--attack-color: var(--green);">
               <span class="attack-icon">N</span>
-              <span class="attack-copy"><strong>Normal Request</strong><span>安全基準請求，雙通道均應維持放行。</span></span>
+              <span class="attack-copy"><strong>Normal Request</strong><span>安全基準請求，用來確認正常流量不會被誤擋。</span></span>
               <span class="attack-meta">BASELINE</span>
             </button>
-            <button class="attack-button" type="button" data-attack="encoded" style="--attack-color: var(--yellow);">
-              <span class="attack-icon">E</span>
-              <span class="attack-copy"><strong>Encoded Payload</strong><span>編碼樣本，檢查 Decoder 後 Path A 規則命中。</span></span>
+            <button class="attack-button" type="button" data-attack="encodedObfuscated" style="--attack-color: var(--yellow);">
+              <span class="attack-icon">E/O</span>
+              <span class="attack-copy"><strong>Encoded + Obfuscated Payload</strong><span>把編碼與混淆合併成同一類，測試 Decoder 還原後能否命中。</span></span>
               <span class="attack-meta">SAMPLE A</span>
             </button>
-            <button class="attack-button" type="button" data-attack="obfuscated" style="--attack-color: var(--red);">
-              <span class="attack-icon">O</span>
-              <span class="attack-copy"><strong>Obfuscated Payload</strong><span>混淆樣本，觀察 Path A/Path B 分流結果差異。</span></span>
+            <button class="attack-button" type="button" data-attack="llm" style="--attack-color: var(--violet);">
+              <span class="attack-icon">L</span>
+              <span class="attack-copy"><strong>LLM Generated Malicious Payload</strong><span>LLM 直接生成的惡意樣本，Normal WAF 與 Decoder + WAF 都能阻擋。</span></span>
               <span class="attack-meta">SAMPLE B</span>
             </button>
             <button class="attack-button" type="button" data-attack="ddqn" style="--attack-color: var(--blue);">
               <span class="attack-icon">D</span>
-              <span class="attack-copy"><strong>DDQN Mutated Payload</strong><span>DDQN 生成變異樣本，測試雙通道覆蓋缺口。</span></span>
+              <span class="attack-copy"><strong>DDQN Mutated Payload</strong><span>DDQN 變異樣本，用來展示 Normal WAF 漏過但 Decoder + WAF 擋下。</span></span>
               <span class="attack-meta">SAMPLE C</span>
             </button>
           </div>
@@ -370,7 +370,7 @@
           <div class="comparison-grid">
             <div class="compare-card left dimmed" id="normal-compare-card">
               <div class="compare-head">
-                <h3>LEFT：Normal WAF</h3>
+                <h3>Normal WAF</h3>
                 <span>decoder disabled</span>
               </div>
               <div class="compare-body">
@@ -383,7 +383,7 @@
 
             <div class="compare-card right dimmed" id="decoder-compare-card">
               <div class="compare-head">
-                <h3>RIGHT：Decoder + WAF</h3>
+                <h3>Decoder + WAF</h3>
                 <span>dual-channel enabled</span>
               </div>
               <div class="compare-body">
@@ -507,33 +507,49 @@
   <script>
     const attacks = {
       normal: {
-        name: "Normal Request", color: "var(--green)", response: [18, 42],
-        sample: "[NORMAL REQUEST SAMPLE]", decoded: "[NORMALIZED SAFE REQUEST]",
+        name: "Normal Request",
+        color: "var(--green)",
+        response: [18, 42],
+        sample: "[NORMAL REQUEST SAMPLE]",
+        decoded: "[NORMALIZED SAFE REQUEST]",
+        normalWaf: { blocked: false, reason: "benign baseline allowed" },
         pathA: { crs: false, js: false, header: false, blocked: false },
         pathB: { crs: false, blocked: false },
         browser: { alert: false, cookie: false, fetch: false },
-        stage: "manual"
+        stage: "baseline"
       },
-      encoded: {
-        name: "Encoded Payload", color: "var(--yellow)", response: [34, 88],
-        sample: "[ENCODED PAYLOAD SAMPLE A]", decoded: "[DECODED PAYLOAD SAMPLE A]",
-        pathA: { crs: true, js: false, header: true, blocked: true },
-        pathB: { crs: false, blocked: false },
-        browser: { alert: true, cookie: false, fetch: false },
-        stage: "manual"
-      },
-      obfuscated: {
-        name: "Obfuscated Payload", color: "var(--red)", response: [86, 150],
-        sample: "[OBFUSCATED PAYLOAD SAMPLE B]", decoded: "[NORMALIZED OBFUSCATED SAMPLE B]",
-        pathA: { crs: false, js: true, header: false, blocked: true },
+      encodedObfuscated: {
+        name: "Encoded + Obfuscated Payload",
+        color: "var(--yellow)",
+        response: [58, 120],
+        sample: "[ENCODED + OBFUSCATED PAYLOAD SAMPLE]",
+        decoded: "[DECODED AND NORMALIZED OBFUSCATED PAYLOAD]",
+        normalWaf: { blocked: false, reason: "raw CRS missed encoded / obfuscated pattern" },
+        pathA: { crs: true, js: true, header: false, blocked: true },
         pathB: { crs: false, blocked: false },
         browser: { alert: true, cookie: true, fetch: false },
         stage: "manual"
       },
+      llm: {
+        name: "LLM Generated Malicious Payload",
+        color: "var(--violet)",
+        response: [62, 132],
+        sample: "[LLM GENERATED MALICIOUS PAYLOAD SAMPLE]",
+        decoded: "[DECODED LLM GENERATED MALICIOUS PAYLOAD]",
+        normalWaf: { blocked: true, reason: "raw CRS / signature matched obvious malicious pattern" },
+        pathA: { crs: true, js: true, header: true, blocked: true },
+        pathB: { crs: true, blocked: true },
+        browser: { alert: true, cookie: false, fetch: false },
+        stage: "manual"
+      },
       ddqn: {
-        name: "DDQN Mutated Payload", color: "var(--blue)", response: [90, 180],
-        sample: "[DDQN MUTATED PAYLOAD SAMPLE C]", decoded: "[DECODED DDQN MUTATED SAMPLE C]",
-        pathA: { crs: false, js: false, header: false, blocked: false },
+        name: "DDQN Mutated Payload",
+        color: "var(--blue)",
+        response: [90, 180],
+        sample: "[DDQN MUTATED PAYLOAD SAMPLE]",
+        decoded: "[DECODED DDQN MUTATED SAMPLE]",
+        normalWaf: { blocked: false, reason: "raw CRS missed mutation pattern" },
+        pathA: { crs: true, js: true, header: false, blocked: true },
         pathB: { crs: false, blocked: false },
         browser: { alert: true, cookie: true, fetch: true },
         stage: "manual"
@@ -671,43 +687,52 @@
 
     function updateScenario(c, response, mode="decoder"){
       const browserExecutable = c.browser.alert || c.browser.cookie || c.browser.fetch;
-      const wafBlocked = c.pathA.blocked || c.pathB.blocked;
+      const normalWafBlocked = Boolean(c.normalWaf && c.normalWaf.blocked);
+      const decoderBlocked = c.pathA.blocked || c.pathB.blocked;
 
       // ===== 左邊：Normal WAF =====
-      const normalBypass = browserExecutable && !wafBlocked;
+      let normalResult = "ALLOWED";
+      let normalRuleText = c.normalWaf?.reason || "raw CRS allowed benign request";
+      if (normalWafBlocked) {
+        normalResult = "BLOCKED";
+      } else if (browserExecutable) {
+        normalResult = "BYPASSED";
+      }
 
       document.getElementById("normal-input").textContent = c.sample;
       document.getElementById("normal-browser").textContent =
-        browserExecutable ? "attack behavior confirmed" : "not executable";
+        browserExecutable ? "attack behavior confirmed" : "benign request";
 
-      document.getElementById("normal-rule").textContent =
-        normalBypass ? "no decoded inspection, raw CRS missed" : "matched";
-
-      document.getElementById("normal-result").textContent =
-        normalBypass ? "BYPASSED" : "BLOCKED";
+      document.getElementById("normal-rule").textContent = normalRuleText;
+      document.getElementById("normal-result").textContent = normalResult;
+      document.getElementById("normal-result").className =
+        normalResult === "BYPASSED" ? "compare-result bypass" : "compare-result block";
 
       // ===== 右邊：Decoder + WAF =====
-      const decoderBlocked = c.pathA.blocked || c.pathB.blocked;
+      let decoderResult = "ALLOWED";
+      if (decoderBlocked) decoderResult = "BLOCKED";
+      else if (browserExecutable) decoderResult = "BYPASSED";
 
       document.getElementById("decoder-input").textContent = c.sample;
 
       document.getElementById("decoder-path-a").textContent =
-        c.pathA.blocked ? "matched" : "not matched";
+        c.pathA.blocked ? "matched after decoding / normalization" : "not matched";
 
       document.getElementById("decoder-path-b").textContent =
-        c.pathB.blocked ? "matched" : "not matched";
+        c.pathB.blocked ? "raw CRS matched" : "not matched";
 
-      document.getElementById("decoder-result").textContent =
-        decoderBlocked ? "BLOCKED" : "BYPASSED";
+      document.getElementById("decoder-result").textContent = decoderResult;
+      document.getElementById("decoder-result").className =
+        decoderResult === "BYPASSED" ? "compare-result bypass" : "compare-result block";
 
-      // 👉 卡片亮起（動畫效果）
+      // 卡片亮起
       document.getElementById("normal-compare-card").classList.remove("dimmed");
       document.getElementById("decoder-compare-card").classList.remove("dimmed");
 
-      // ===== 原本系統邏輯（保留）=====
+      // ===== 系統總結邏輯 =====
       const finalResult = decoderBlocked
         ? "BLOCKED BY DECODER+WAF"
-        : (browserExecutable ? "SUCCESSFUL BYPASS" : "NOT EXECUTABLE");
+        : (browserExecutable ? "SUCCESSFUL BYPASS" : "ALLOWED");
 
       $("#payload-preview").textContent = c.sample;
       $("#token-table").innerHTML = dualPanelRows(c, finalResult);
@@ -771,7 +796,7 @@
       setPhase("STEP 1: LLM GENERATING INITIAL PAYLOAD...");
       setProgress({llm: 35, ddqn: 0, browser: 0, llmText: "generating", ddqnText: "waiting", browserText: "pending"});
       const llmPayload = {
-        ...attacks.encoded,
+        ...attacks.llm,
         name: "LLM Generated Payload",
         color: "var(--blue)",
         sample: "[LLM GENERATED PAYLOAD]",
@@ -793,6 +818,7 @@
         name: "DDQN Mutated Payload",
         sample: "[DDQN MUTATED VERSION OF LLM PAYLOAD]",
         decoded: "[DECODED DDQN MUTATED PAYLOAD]",
+        normalWaf: { blocked: false, reason: "raw CRS missed mutation pattern" },
         pathA: { crs: false, js: false, header: false, blocked: false },
         pathB: { crs: false, blocked: false },
         browser: { alert: true, cookie: true, fetch: true }
