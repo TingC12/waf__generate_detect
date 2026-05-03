@@ -672,34 +672,65 @@
     function updateScenario(c, response, mode="decoder"){
       const browserExecutable = c.browser.alert || c.browser.cookie || c.browser.fetch;
       const wafBlocked = c.pathA.blocked || c.pathB.blocked;
-      const finalResult = wafBlocked ? "BLOCKED BY DECODER+WAF" : (browserExecutable ? "SUCCESSFUL BYPASS" : "NOT EXECUTABLE");
+
+      // ===== 左邊：Normal WAF =====
+      const normalBypass = browserExecutable && !wafBlocked;
+
+      document.getElementById("normal-input").textContent = c.sample;
+      document.getElementById("normal-browser").textContent =
+        browserExecutable ? "attack behavior confirmed" : "not executable";
+
+      document.getElementById("normal-rule").textContent =
+        normalBypass ? "no decoded inspection, raw CRS missed" : "matched";
+
+      document.getElementById("normal-result").textContent =
+        normalBypass ? "BYPASSED ❌" : "BLOCKED";
+
+      // ===== 右邊：Decoder + WAF =====
+      const decoderBlocked = c.pathA.blocked || c.pathB.blocked;
+
+      document.getElementById("decoder-input").textContent = c.sample;
+
+      document.getElementById("decoder-path-a").textContent =
+        c.pathA.blocked ? "matched" : "not matched";
+
+      document.getElementById("decoder-path-b").textContent =
+        c.pathB.blocked ? "matched" : "not matched";
+
+      document.getElementById("decoder-result").textContent =
+        decoderBlocked ? "BLOCKED ✅" : "BYPASSED";
+
+      // 👉 卡片亮起（動畫效果）
+      document.getElementById("normal-compare-card").classList.remove("dimmed");
+      document.getElementById("decoder-compare-card").classList.remove("dimmed");
+
+      // ===== 原本系統邏輯（保留）=====
+      const finalResult = decoderBlocked
+        ? "BLOCKED BY DECODER+WAF"
+        : (browserExecutable ? "SUCCESSFUL BYPASS" : "NOT EXECUTABLE");
 
       $("#payload-preview").textContent = c.sample;
       $("#token-table").innerHTML = dualPanelRows(c, finalResult);
       $("#raw-payload-label").textContent = c.sample;
       $("#decoded-label").textContent = c.decoded;
       $("#final-decision-label").textContent = finalResult;
+
       setBrowserVerification(c.browser, finalResult);
 
       state.total += 1;
       if(finalResult.includes("BLOCKED")) state.blocked += 1;
       if(finalResult.includes("BYPASS")) state.bypassed += 1;
+
       $("#stat-total").textContent = state.total;
       $("#stat-blocked").textContent = state.blocked;
       $("#stat-bypassed").textContent = state.bypassed;
       $("#stat-response").textContent = `${response}ms`;
       $("#last-response").textContent = `last response ${response}ms`;
       $("#infer-time").textContent = `decoder pass ${rand(18,44)}ms`;
-      $("#defense-mode").textContent = wafBlocked ? "BLOCKED" : "MONITORING";
-      $("#waf-status").textContent = mode === "normal-waf" ? "NORMAL WAF" : "GUARDING";
-      $("#detect-rate").textContent = mode === "normal-waf" ? "Normal WAF" : "Path A∨B";
+
+      $("#defense-mode").textContent = decoderBlocked ? "BLOCKED" : "MONITORING";
 
       addAttackLog(c, response, finalResult);
-      addWafLogLine(`decoder normalized payload: ${c.decoded}`, "note");
-      addWafLogLine(`Path A rule ${c.pathA.blocked ? "matched" : "not matched"}`, c.pathA.blocked ? "warn" : "info");
-      addWafLogLine(`Path B rule ${c.pathB.blocked ? "matched" : "not matched"}`, c.pathB.blocked ? "warn" : "info");
-      addWafLogLine(`final decision: ${finalResult}`, wafBlocked ? "warn" : (browserExecutable ? "crit" : "note"));
-      addTargetLog(browserExecutable ? "browser verification confirms executable behavior" : "browser verification: no execution", browserExecutable ? "crit" : "note");
     }
 
     function runAttack(type){
