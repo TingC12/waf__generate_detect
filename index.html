@@ -301,17 +301,17 @@
             </button>
             <button class="attack-button" type="button" data-attack="llm" style="--attack-color: var(--violet);">
               <span class="attack-icon">L</span>
-              <span class="attack-copy"><strong>LLM Generated Malicious Payload</strong><span>LLM 生成的惡意樣本，Normal WAF 約 70% 機率會阻擋，呈現不穩定性。</span></span>
+              <span class="attack-copy"><strong>LLM Generated Malicious Payload</strong><span>LLM 生成的惡意樣本。</span></span>
               <span class="attack-meta">SAMPLE A</span>
             </button>
             <button class="attack-button" type="button" data-attack="encodedObfuscated" style="--attack-color: var(--yellow);">
               <span class="attack-icon">E/O</span>
-              <span class="attack-copy"><strong>Encoded + Obfuscated Payload</strong><span>編碼與混淆樣本，Normal WAF 約 40% 機率阻擋，Decoder 還原後較容易命中。</span></span>
+              <span class="attack-copy"><strong>Encoded + Obfuscated Payload</strong><span>編碼與混淆樣本。</span></span>
               <span class="attack-meta">SAMPLE B</span>
             </button>
             <button class="attack-button" type="button" data-attack="ddqn" style="--attack-color: var(--blue);">
               <span class="attack-icon">D</span>
-              <span class="attack-copy"><strong>DDQN Mutated Payload</strong><span>DDQN 變異樣本，Normal WAF 約 10% 機率阻擋，用來展示較穩定的繞過能力。</span></span>
+              <span class="attack-copy"><strong>DDQN Mutated Payload</strong><span>DDQN 變異樣本。</span></span>
               <span class="attack-meta">SAMPLE C</span>
             </button>
           </div>
@@ -524,7 +524,7 @@
         response: [58, 120],
         sample: "[ENCODED + OBFUSCATED PAYLOAD SAMPLE]",
         decoded: "[DECODED AND NORMALIZED OBFUSCATED PAYLOAD]",
-        normalWaf: { blocked: false, blockRate: 0.4, difficulty: "medium", reason: "probabilistic raw CRS check for encoded / obfuscated pattern" },
+        normalWaf: { blocked: false, blockRate: 0.7, difficulty: "medium", reason: "probabilistic raw CRS check for encoded / obfuscated pattern" },
         pathA: { crs: true, js: true, header: false, blocked: true },
         pathB: { crs: false, blocked: false },
         browser: { alert: true, cookie: true, fetch: false },
@@ -850,11 +850,12 @@
         ? (normalWafBlocked ? "BLOCKED" : "BYPASSED")
         : (decoderBlocked ? "BLOCKED" : "MONITORING");
 
+      updateWafStatusCardForAttack(c.key || c.stage || c.name || "manual", c, normalResult, decoderBlocked, browserExecutable);
       addAttackLog(c, response, finalResult);
     }
 
     function runAttack(type){
-      const c = attacks[type];
+      const c = { ...attacks[type], key: type };
       const response = rand(c.response[0], c.response[1]);
       $$(".attack-button").forEach(btn => btn.classList.toggle("selected", btn.dataset.attack === type));
       launchPacket(c, type === "ddqn");
@@ -874,10 +875,72 @@
       $("#ddqn-status").textContent = ddqnText.toUpperCase();
     }
 
+
+    function updateWafStatusCardForAttack(type, c, normalResult, decoderBlocked, browserExecutable){
+      // Normalize attack type so the status card updates correctly even if the
+      // scenario object comes from a manual preset, demo step, or copied payload.
+      if (type === "manual" || type === "baseline" || type === undefined || type === null) {
+        if (c.name && c.name.includes("Encoded")) type = "encodedObfuscated";
+        else if (c.name && c.name.includes("LLM")) type = "llm";
+        else if (c.name && c.name.includes("DDQN")) type = "ddqn";
+        else if (c.name && c.name.includes("Normal")) type = "normal";
+      }
+
+      const cfg = {
+        normal: {
+          llm: 0, ddqn: 0, browser: 0, decoder: 100,
+          llmText: "ready", ddqnText: "online", browserText: "benign", decoderText: "ACTIVE",
+          mainState: "ACTIVE", modeLabel: "baseline request",
+          desc: "Normal traffic allowed / no malicious behavior",
+          status: "GUARDING", decisionWidth: 100, decisionText: "ALLOW", decisionColor: "var(--green)"
+        },
+        llm: {
+          llm: 100, ddqn: 0, browser: browserExecutable ? 100 : 0, decoder: 100,
+          llmText: "generated", ddqnText: "idle", browserText: browserExecutable ? "verified" : "pending", decoderText: "ACTIVE",
+          mainState: normalResult === "BLOCKED" ? "NORMAL WAF" : "MONITORING",
+          modeLabel: `LLM sample / ${Math.round((c.normalWaf?.blockRate || 0) * 100)}% block chance`,
+          desc: normalResult === "BLOCKED" ? "LLM payload blocked by Normal WAF probabilistic CRS check" : "LLM payload passed Normal WAF this run; Decoder + WAF still checks decoded/raw paths",
+          status: decoderBlocked ? "BLOCKED" : "MONITORING", decisionWidth: decoderBlocked ? 100 : 65,
+          decisionText: decoderBlocked ? "Path A∨B" : "MONITOR", decisionColor: decoderBlocked ? "var(--green)" : "var(--yellow)"
+        },
+        encodedObfuscated: {
+          // Show visible activity for this preset too. The rows are reused as
+          // a compact pipeline indicator: LLM = source payload, DDQN = obfuscation step.
+          llm: 55, ddqn: 45, browser: browserExecutable ? 100 : 0, decoder: 100,
+          llmText: "encoded", ddqnText: "obfuscated", browserText: browserExecutable ? "verified" : "pending", decoderText: "ACTIVE",
+          mainState: normalResult === "BLOCKED" ? "NORMAL WAF" : "DECODER WAF",
+          modeLabel: `encoded / obfuscated / ${Math.round((c.normalWaf?.blockRate || 0) * 100)}% block chance`,
+          desc: normalResult === "BLOCKED" ? "Raw CRS blocked this encoded / obfuscated sample" : "Raw CRS missed; decoder normalizes payload before dual-channel detection",
+          status: decoderBlocked ? "BLOCKED" : "MONITORING", decisionWidth: decoderBlocked ? 100 : 70,
+          decisionText: decoderBlocked ? "Path A∨B" : "MONITOR", decisionColor: decoderBlocked ? "var(--green)" : "var(--yellow)"
+        },
+        ddqn: {
+          llm: 100, ddqn: 100, browser: browserExecutable ? 100 : 0, decoder: 100,
+          llmText: "source", ddqnText: "mutated", browserText: browserExecutable ? "verified" : "pending", decoderText: "ACTIVE",
+          mainState: normalResult === "BLOCKED" ? "NORMAL WAF" : "DECODER WAF",
+          modeLabel: `DDQN mutation / ${Math.round((c.normalWaf?.blockRate || 0) * 100)}% block chance`,
+          desc: normalResult === "BLOCKED" ? "Normal WAF caught this DDQN sample in this run" : "Normal WAF missed DDQN mutation; Decoder + WAF blocks through decoded path",
+          status: decoderBlocked ? "BLOCKED" : "MONITORING", decisionWidth: decoderBlocked ? 100 : 70,
+          decisionText: decoderBlocked ? "Path A∨B" : "MONITOR", decisionColor: decoderBlocked ? "var(--green)" : "var(--yellow)"
+        }
+      }[type] || null;
+
+      if(!cfg) return;
+
+      setProgress(cfg);
+      $("#waf-main-state").textContent = cfg.mainState;
+      $("#waf-main-desc").textContent = cfg.desc;
+      $("#waf-mode-label").textContent = cfg.modeLabel;
+      $("#waf-status").textContent = cfg.status;
+      $("#detect-bar").style.setProperty("--w", `${cfg.decisionWidth}%`);
+      $("#detect-bar").style.setProperty("--c", cfg.decisionColor);
+      $("#detect-rate").textContent = cfg.decisionText;
+    }
+
     async function runFullDemo(){
       if(state.demoRunning) return;
       state.demoRunning = true;
-      $("#one-click-demo").disabled = true;
+      $("#demo").disabled = true;
 
       resetAllUI();
 
@@ -970,7 +1033,7 @@
       addWafLogLine("final demo result: same payload blocked after decoder defense enabled", "note", "result");
 
       state.demoRunning = false;
-      $("#one-click-demo").disabled = false;
+      $("#demo").disabled = false;
     }
 
     $$(".tab").forEach(tab => {
@@ -988,7 +1051,7 @@
     $$(".attack-button").forEach(btn => btn.addEventListener("click", () => runAttack(btn.dataset.attack)));
     $$(".opt").forEach(btn => btn.addEventListener("click", () => btn.classList.toggle("active")));
     $("#launch-custom").addEventListener("click", () => runAttack("ddqn"));
-    $("#one-click-demo").addEventListener("click", runFullDemo);
+    $("#demo").addEventListener("click", runFullDemo);
     $("#export-logs").addEventListener("click", () => addWafLogLine("operator exported sanitized logs", "info", "export=local"));
     $("#settings").addEventListener("click", () => addWafLogLine("settings panel opened in simulation", "note", "settings=demo"));
 
