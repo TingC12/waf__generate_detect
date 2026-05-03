@@ -289,7 +289,9 @@
 
         <nav class="tabs" role="tablist" aria-label="attacker modes">
           <button class="tab active" type="button" role="tab" aria-selected="true" data-tab="presets">快速預設</button>
-          <button class="tab" type="button" role="tab" aria-selected="false" data-tab="builder">固定樣本集</button>
+          <button class="tab" type="button" role="tab" aria-selected="false" data-tab="builder" style="display:none;">
+            固定樣本集
+          </button>
         </nav>
 
         <div class="tab-stage">
@@ -316,7 +318,7 @@
             </button>
           </div>
 
-          <div class="tab-page builder" id="builder" role="tabpanel">
+          <div class="tab-page builder" id="builder" role="tabpanel" style="display:none;">
             <div class="builder-group">
               <label>分類</label>
               <div class="option-grid">
