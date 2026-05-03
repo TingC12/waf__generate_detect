@@ -578,7 +578,7 @@
       $("#normal-input").textContent = payload;
       $("#normal-browser").textContent = "attack behavior confirmed";
       $("#normal-rule").textContent = "no decoded inspection, raw CRS missed";
-      $("#normal-result").textContent = "BYPASSED ❌";
+      $("#normal-result").textContent = "BYPASSED";
     }
 
     function setCompareDecoderBlock(payload){
@@ -588,7 +588,7 @@
       $("#decoder-input").textContent = payload;
       $("#decoder-path-a").textContent = "decoded payload matched CRS / JS checks";
       $("#decoder-path-b").textContent = "raw payload also checked as backup";
-      $("#decoder-result").textContent = "BLOCKED ✅";
+      $("#decoder-result").textContent = "BLOCKED";
     }
 
     function dualPanelRows(c, finalResult){
@@ -684,7 +684,7 @@
         normalBypass ? "no decoded inspection, raw CRS missed" : "matched";
 
       document.getElementById("normal-result").textContent =
-        normalBypass ? "BYPASSED ❌" : "BLOCKED";
+        normalBypass ? "BYPASSED" : "BLOCKED";
 
       // ===== 右邊：Decoder + WAF =====
       const decoderBlocked = c.pathA.blocked || c.pathB.blocked;
@@ -698,7 +698,7 @@
         c.pathB.blocked ? "matched" : "not matched";
 
       document.getElementById("decoder-result").textContent =
-        decoderBlocked ? "BLOCKED ✅" : "BYPASSED";
+        decoderBlocked ? "BLOCKED" : "BYPASSED";
 
       // 👉 卡片亮起（動畫效果）
       document.getElementById("normal-compare-card").classList.remove("dimmed");
@@ -813,7 +813,7 @@
       addAttackLog(ddqnPayload, rand(50,90), "EXECUTABLE");
       await sleep(1500);
 
-      setPhase("STEP 4: NORMAL WAF TEST → SAME PAYLOAD BYPASSES ❌");
+      setPhase("STEP 4: NORMAL WAF TEST → SAME PAYLOAD BYPASSES");
       $("#waf-mode-label").textContent = "normal waf only";
       $("#waf-main-state").textContent = "NORMAL WAF";
       $("#waf-main-desc").textContent = "Decoder disabled / raw CRS only";
@@ -830,7 +830,7 @@
       setTimeout(() => setCompareNormalBypass(normalWafBypass.sample), 620);
       await sleep(1900);
 
-      setPhase("STEP 5: ENABLE DECODER + WAF → SAME PAYLOAD BLOCKED ✅");
+      setPhase("STEP 5: ENABLE DECODER + WAF → SAME PAYLOAD BLOCKED");
       $("#waf-mode-label").textContent = "dual-channel ready";
       $("#waf-main-state").textContent = "ACTIVE";
       $("#waf-main-desc").textContent = "Decoder + CRS rule engine running";
@@ -848,7 +848,7 @@
       setTimeout(() => setCompareDecoderBlock(decoderBlocked.sample), 620);
       await sleep(1800);
 
-      setPhase("RESULT: LLM + DDQN PAYLOAD CAN BYPASS NORMAL WAF, BUT DECODER + WAF BLOCKS THE SAME PAYLOAD ✅");
+      setPhase("RESULT: LLM + DDQN PAYLOAD CAN BYPASS NORMAL WAF, BUT DECODER + WAF BLOCKS THE SAME PAYLOAD");
       $("#target-state").textContent = "BLOCKED";
       $("#target-state").classList.remove("hot");
       $("#final-decision-label").textContent = "BLOCKED BY DECODER+WAF";
