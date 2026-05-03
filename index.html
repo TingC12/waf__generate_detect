@@ -299,21 +299,14 @@
               <span class="attack-copy"><strong>Normal Request</strong><span>安全基準請求，用來確認正常流量不會被誤擋。</span></span>
               <span class="attack-meta">BASELINE</span>
             </button>
-            <button class="attack-button" type="button" data-attack="llm" style="--attack-color: var(--violet);">
-              <span class="attack-icon">L</span>
-              <span class="attack-copy">
-                <strong>LLM Generated Malicious Payload</strong>
-                <span>LLM 直接生成的惡意樣本，Normal WAF 與 Decoder + WAF 都能阻擋。</span>
-              </span>
-              <span class="attack-meta">SAMPLE A</span>
-            </button>
-
             <button class="attack-button" type="button" data-attack="encodedObfuscated" style="--attack-color: var(--yellow);">
               <span class="attack-icon">E/O</span>
-              <span class="attack-copy">
-                <strong>Encoded + Obfuscated Payload</strong>
-                <span>把編碼與混淆合併成同一類，測試 Decoder 還原後能否命中。</span>
-              </span>
+              <span class="attack-copy"><strong>Encoded + Obfuscated Payload</strong><span>把編碼與混淆合併成同一類，測試 Decoder 還原後能否命中。</span></span>
+              <span class="attack-meta">SAMPLE A</span>
+            </button>
+            <button class="attack-button" type="button" data-attack="llm" style="--attack-color: var(--violet);">
+              <span class="attack-icon">L</span>
+              <span class="attack-copy"><strong>LLM Generated Malicious Payload</strong><span>LLM 直接生成的惡意樣本，Normal WAF 與 Decoder + WAF 都能阻擋。</span></span>
               <span class="attack-meta">SAMPLE B</span>
             </button>
             <button class="attack-button" type="button" data-attack="ddqn" style="--attack-color: var(--blue);">
@@ -577,6 +570,67 @@
       $("#demo-phase-mini").textContent = text;
     }
 
+    function resetAllUI(){
+      // ===== counters =====
+      state.total = 0;
+      state.blocked = 0;
+      state.bypassed = 0;
+
+      $("#stat-total").textContent = "0";
+      $("#stat-blocked").textContent = "0";
+      $("#stat-bypassed").textContent = "0";
+      $("#stat-response").textContent = "--";
+      $("#last-response").textContent = "last response --";
+
+      // ===== logs =====
+      $("#waf-log-list").innerHTML = `<div class="waf-log-line"><span>00:00:00</span><span class="sev note">NOTE</span><strong>system ready for safe visual simulation</strong><span>dual-channel</span></div>`;
+      $("#attack-log-list").innerHTML = `<div class="attack-log-line"><span>00:00:00</span><span class="result-pill info">READY</span><strong>Demo Ready</strong><span>--</span></div>`;
+      $("#target-log-list").innerHTML = `<div class="target-log-line"><span>00:00:00</span><span class="sev note">NOTE</span><b>target idle, browser verifier ready</b></div>`;
+
+      // ===== compare panel =====
+      resetComparePanel();
+
+      // ===== progress bars / status =====
+      setProgress({
+        llm: 0,
+        ddqn: 0,
+        browser: 0,
+        decoder: 100,
+        llmText: "ready",
+        ddqnText: "online",
+        browserText: "pending",
+        decoderText: "ACTIVE"
+      });
+
+      // ===== browser verification panel =====
+      setBrowserVerification({ alert: false, cookie: false, fetch: false }, "NOT EXECUTABLE");
+      $("#target-state").classList.remove("hot");
+      $("#target-cpu").textContent = "0%";
+      $("#cpu-gauge").style.setProperty("--cpu", 0);
+      $("#cpu-gauge").style.setProperty("--gauge-color", "var(--green)");
+
+      // ===== payload / decision panel =====
+      $("#payload-preview").textContent = "[NORMAL REQUEST SAMPLE]";
+      $("#raw-payload-label").textContent = "[NORMAL REQUEST SAMPLE]";
+      $("#decoded-label").textContent = "[NORMALIZED SAFE REQUEST]";
+      $("#final-decision-label").textContent = "READY";
+      $("#token-table").innerHTML = "";
+      $("#infer-time").textContent = "decoder pass --";
+
+      // ===== WAF state =====
+      $("#waf-main-state").textContent = "ACTIVE";
+      $("#waf-main-desc").textContent = "Decoder + CRS rule engine running";
+      $("#waf-status").textContent = "GUARDING";
+      $("#waf-mode-label").textContent = "dual-channel ready";
+      $("#defense-mode").textContent = "GUARDING";
+
+      // ===== selected preset =====
+      $$(".attack-button").forEach(btn => btn.classList.toggle("selected", btn.dataset.attack === "normal"));
+
+      // ===== phase =====
+      setPhase("READY");
+    }
+
 
     function resetComparePanel(){
       ["normal-compare-card", "decoder-compare-card"].forEach(id => {
@@ -797,14 +851,7 @@
       state.demoRunning = true;
       $("#one-click-demo").disabled = true;
 
-      state.total = 0; state.blocked = 0; state.bypassed = 0;
-      $("#stat-total").textContent = "0";
-      $("#stat-blocked").textContent = "0";
-      $("#stat-bypassed").textContent = "0";
-      $("#waf-log-list").innerHTML = "";
-      $("#attack-log-list").innerHTML = "";
-      $("#target-log-list").innerHTML = "";
-      resetComparePanel();
+      resetAllUI();
 
       setPhase("STEP 1: LLM GENERATING INITIAL PAYLOAD...");
       setProgress({llm: 35, ddqn: 0, browser: 0, llmText: "generating", ddqnText: "waiting", browserText: "pending"});
