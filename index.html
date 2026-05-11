@@ -1,2133 +1,966 @@
 <!doctype html>
-
 <html lang="zh-Hant">
-
 <head>
-
   <meta charset="utf-8" />
-
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-
   <title>WAF-AI BATTLE LAB</title>
-
   <link rel="preconnect" href="https://fonts.googleapis.com">
-
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-
   <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-
   <style>
-
     :root {
-
       --bg: #070b10;
-
       --panel: #101722;
-
       --panel-2: #141d2a;
-
       --panel-3: #1a2634;
-
       --ink: #eaf6ff;
-
       --muted: #8fa3b8;
-
       --dim: #5f7183;
-
       --line: rgba(151, 184, 214, 0.16);
-
       --line-hot: rgba(89, 226, 255, 0.42);
-
       --green: #67f29a;
-
       --yellow: #ffd166;
-
       --red: #ff5c7a;
-
       --blue: #4dabff;
-
       --cyan: #46f0ff;
-
       --violet: #b994ff;
-
       --shadow: 0 20px 70px rgba(0, 0, 0, 0.42);
-
       --mono: "JetBrains Mono", "Cascadia Mono", "SFMono-Regular", Consolas, monospace;
-
     }
-
-
-
     * { box-sizing: border-box; }
-
     html { background: var(--bg); color: var(--ink); font-family: var(--mono); }
-
     body {
-
       min-height: 100vh;
-
       margin: 0;
-
       overflow-x: hidden;
-
       background:
-
         radial-gradient(circle at 14% -8%, rgba(70, 240, 255, 0.16), transparent 30%),
-
         radial-gradient(circle at 82% 0%, rgba(77, 171, 255, 0.14), transparent 28%),
-
         linear-gradient(180deg, rgba(103, 242, 154, 0.04), transparent 36%),
-
         var(--bg);
-
     }
-
-
-
     button { font: inherit; -webkit-tap-highlight-color: transparent; }
-
     .lab { min-height: 100vh; display: grid; grid-template-rows: auto minmax(720px, 1fr) auto; }
-
-
-
     .topbar {
-
       display: grid;
-
       grid-template-columns: minmax(0, 1fr) auto;
-
       gap: 26px;
-
       align-items: center;
-
       padding: 26px 30px 20px;
-
       border-bottom: 1px solid var(--line);
-
       background: rgba(7, 11, 16, 0.88);
-
       backdrop-filter: blur(18px);
-
       position: sticky;
-
       top: 0;
-
       z-index: 30;
-
     }
-
-
-
     .brand { display: grid; gap: 8px; min-width: 0; }
-
     .title-line { display: flex; flex-wrap: wrap; align-items: end; gap: 16px; }
-
     h1 { margin: 0; font-size: clamp(34px, 5vw, 76px); line-height: 0.92; font-weight: 800; color: #f7fbff; text-shadow: 0 0 34px rgba(70, 240, 255, 0.14); }
-
     .subtitle { color: var(--muted); font-size: clamp(13px, 1.35vw, 18px); line-height: 1.4; }
-
-
-
     .live-pill, .micro-badge {
-
       display: inline-flex; gap: 8px; align-items: center; justify-content: center;
-
       padding: 8px 11px; border-radius: 8px; font-weight: 700; white-space: nowrap;
-
     }
-
     .live-pill { border: 1px solid rgba(103, 242, 154, 0.35); color: var(--green); background: rgba(103, 242, 154, 0.08); font-size: 12px; }
-
     .micro-badge { min-height: 30px; border: 1px solid rgba(70, 240, 255, 0.36); color: var(--cyan); background: rgba(70, 240, 255, 0.08); font-size: 11px; }
-
-
-
     .status-cluster { display: grid; grid-template-columns: repeat(3, minmax(160px, 1fr)) auto; gap: 10px; align-items: stretch; min-width: min(940px, 100%); }
-
     .status-light, .clock-card {
-
       min-height: 58px; border: 1px solid var(--line); border-radius: 8px;
-
       background: linear-gradient(180deg, rgba(255,255,255,0.035), rgba(255,255,255,0.01)), var(--panel);
-
       display: grid; align-items: center; padding: 10px 12px;
-
     }
-
     .status-light { grid-template-columns: auto 1fr; gap: 10px; }
-
     .status-dot { width: 13px; height: 13px; border-radius: 50%; background: var(--green); box-shadow: 0 0 0 0 rgba(103, 242, 154, 0.58), 0 0 22px rgba(103, 242, 154, 0.45); animation: pulse 1.7s ease-out infinite; }
-
     .status-dot.blue { background: var(--blue); }
-
     .status-dot.cyan { background: var(--cyan); }
-
     @keyframes pulse { 72% { box-shadow: 0 0 0 12px rgba(70, 240, 255, 0), 0 0 20px rgba(70, 240, 255, 0.42); } }
-
     .status-light b { display: block; font-size: 12px; color: var(--ink); margin-bottom: 3px; }
-
     .status-light span { color: var(--muted); font-size: 11px; }
-
     .clock-card { min-width: 190px; text-align: right; color: var(--muted); font-size: 11px; gap: 3px; }
-
     .clock-card strong { color: var(--ink); font-size: 15px; }
-
-
-
     .arena { display: grid; grid-template-columns: minmax(340px, 430px) 74px minmax(520px, 1fr); gap: 14px; padding: 16px; min-height: 0; }
-
     .panel { min-width: 0; background: linear-gradient(180deg, rgba(255,255,255,0.035), rgba(255,255,255,0.006)), var(--panel); border: 1px solid var(--line); border-radius: 8px; box-shadow: var(--shadow); overflow: hidden; }
-
     .panel-title { min-height: 72px; padding: 16px; border-bottom: 1px solid var(--line); display: flex; align-items: start; justify-content: space-between; gap: 14px; }
-
     .panel-title h2 { margin: 0 0 6px; font-size: 18px; line-height: 1.15; }
-
     .panel-title p { margin: 0; color: var(--muted); font-size: 11px; line-height: 1.45; }
-
-
-
     .attacker-panel { display: grid; grid-template-rows: auto auto auto minmax(360px, 1fr) auto; min-height: 720px; }
-
     .demo-control { margin: 14px 14px 0; display: grid; gap: 10px; }
-
     .demo-button { min-height: 50px; border: 0; border-radius: 8px; cursor: pointer; font-weight: 800; color: #061017; background: linear-gradient(90deg, var(--blue), var(--cyan)); box-shadow: 0 0 30px rgba(70,240,255,.16); }
-
     .demo-button:disabled { opacity: .55; cursor: not-allowed; }
-
     .demo-phase-mini { padding: 10px 12px; border: 1px solid rgba(70, 240, 255, 0.24); border-radius: 8px; background: rgba(70, 240, 255, 0.06); color: var(--cyan); font-size: 11px; line-height: 1.4; }
-
-
-
     .tabs { display: grid; grid-template-columns: 1fr 1fr; gap: 4px; margin: 14px 14px 0; padding: 4px; border: 1px solid var(--line); border-radius: 8px; background: rgba(0,0,0,0.20); }
-
     .tab { min-height: 40px; border: 0; border-radius: 6px; background: transparent; color: var(--muted); cursor: pointer; }
-
     .tab.active { color: var(--ink); background: var(--panel-3); box-shadow: inset 0 0 0 1px rgba(70, 240, 255, 0.16); }
-
     .tab-stage { position: relative; min-height: 430px; padding: 14px; overflow: hidden; }
-
     .tab-page { position: absolute; inset: 14px; display: grid; gap: 10px; opacity: 0; transform: translateY(8px); pointer-events: none; transition: opacity 230ms ease, transform 230ms ease; }
-
     .tab-page.active { opacity: 1; transform: translateY(0); pointer-events: auto; }
-
-
-
     .attack-button { width: 100%; min-height: 78px; border: 1px solid var(--line); border-left: 4px solid var(--attack-color); border-radius: 8px; background: linear-gradient(90deg, color-mix(in srgb, var(--attack-color), transparent 90%), rgba(255,255,255,0.02)), var(--panel-2); color: var(--ink); display: grid; grid-template-columns: 44px 1fr auto; gap: 12px; align-items: center; padding: 12px; text-align: left; cursor: pointer; transition: transform 150ms ease, border-color 150ms ease; }
-
     .attack-button:hover { transform: translateY(-1px); }
-
     .attack-button.selected { box-shadow: 0 0 0 1px color-mix(in srgb, var(--attack-color), transparent 40%), 0 14px 34px color-mix(in srgb, var(--attack-color), transparent 86%); }
-
     .attack-icon { width: 42px; height: 42px; border-radius: 8px; display: grid; place-items: center; color: #061017; background: var(--attack-color); font-weight: 800; font-size: 18px; }
-
     .attack-copy { min-width: 0; display: grid; gap: 5px; }
-
     .attack-copy strong { font-size: 13px; line-height: 1.3; }
-
     .attack-copy span { color: var(--muted); font-size: 11px; line-height: 1.4; }
-
     .attack-meta { color: var(--dim); font-size: 10px; text-align: right; white-space: nowrap; }
-
-
-
     .builder { align-content: start; }
-
     .builder-group { display: grid; gap: 8px; }
-
     .builder-group label { color: var(--muted); font-size: 11px; }
-
     .option-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 7px; }
-
     .tech-grid { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 7px; }
-
     .opt { min-height: 38px; border: 1px solid var(--line); border-radius: 8px; background: var(--panel-2); color: var(--muted); cursor: pointer; padding: 7px; font-size: 11px; }
-
     .opt.active { color: var(--ink); border-color: rgba(70, 240, 255, 0.5); background: rgba(70, 240, 255, 0.10); }
-
     .payload-box { min-height: 94px; padding: 12px; border: 1px dashed rgba(70, 240, 255, 0.28); border-radius: 8px; background: rgba(0,0,0,0.24); color: var(--cyan); font-size: 11px; line-height: 1.55; overflow-wrap: anywhere; }
-
     .launch-custom { min-height: 44px; border: 0; border-radius: 8px; background: linear-gradient(90deg, var(--blue), var(--cyan)); color: #061017; font-weight: 800; cursor: pointer; }
-
-
-
     .attack-log { display: grid; grid-template-rows: auto minmax(120px, 1fr); border-top: 1px solid var(--line); min-height: 190px; }
-
     .attack-log header { display: flex; justify-content: space-between; align-items: center; gap: 10px; padding: 12px 14px; color: var(--muted); font-size: 11px; border-bottom: 1px solid var(--line); }
-
     .attack-log-list { padding: 12px 14px 14px; display: grid; gap: 8px; max-height: 190px; overflow: auto; }
-
     .attack-log-line, .waf-log-line { display: grid; grid-template-columns: 66px auto 1fr auto; gap: 8px; align-items: center; min-height: 34px; padding: 8px; border: 1px solid var(--line); border-radius: 8px; background: rgba(0,0,0,0.20); color: var(--muted); font-size: 10px; }
-
     .result-pill { min-width: 88px; border-radius: 999px; padding: 5px 7px; text-align: center; color: #061017; background: var(--green); font-weight: 800; font-size: 10px; }
-
     .result-pill.blocked { background: var(--yellow); }
-
     .result-pill.bypassed { background: var(--red); color: #fff; }
-
     .result-pill.info { background: var(--cyan); }
-
-
-
     .battle-zone { position: relative; min-height: 720px; border: 1px solid var(--line); border-radius: 8px; overflow: hidden; background: linear-gradient(90deg, transparent 44%, rgba(70, 240, 255, 0.12) 49%, rgba(70, 240, 255, 0.34) 50%, rgba(70, 240, 255, 0.12) 51%, transparent 56%), rgba(8, 13, 19, 0.72); box-shadow: inset 0 0 44px rgba(70, 240, 255, 0.08); }
-
     .battle-zone::before { content: ""; position: absolute; inset: 18px 50% 18px auto; width: 1px; transform: translateX(0.5px); background: repeating-linear-gradient(180deg, rgba(70,240,255,0.65) 0 10px, transparent 10px 22px); }
-
     .battle-zone::after { content: ""; position: absolute; top: 0; bottom: 0; left: 50%; width: 18px; transform: translateX(-50%); background: linear-gradient(180deg, transparent, rgba(70,240,255,0.32), transparent); filter: blur(10px); animation: beam 2.3s ease-in-out infinite; }
-
     @keyframes beam { 50% { opacity: 0.95; } }
-
     .battle-label { position: absolute; left: 50%; top: 16px; transform: translateX(-50%); writing-mode: vertical-rl; color: var(--cyan); font-size: 11px; letter-spacing: 0.16em; z-index: 2; }
-
     .packet { position: absolute; top: -24px; left: calc(50% - 9px); width: 18px; height: 18px; border: 2px solid var(--packet-color); border-radius: 5px; background: rgba(7, 11, 16, 0.9); box-shadow: 0 0 20px color-mix(in srgb, var(--packet-color), transparent 25%); z-index: 5; animation: packet-drop 1.2s cubic-bezier(.2,.82,.28,1) forwards; }
-
     @keyframes packet-drop { 0% { transform: translate(-8px, -28px) rotate(0deg); opacity: 0; } 10%,86% { opacity: 1; } 100% { transform: translate(var(--drift), calc(100vh - 265px)) rotate(180deg); opacity: 0; } }
-
     .explosion { position: absolute; left: 50%; bottom: 34px; width: 12px; height: 12px; border-radius: 50%; border: 2px solid var(--blast-color); transform: translate(-50%, 0); z-index: 6; animation: blast 620ms ease-out forwards; pointer-events: none; }
-
     @keyframes blast { to { width: 86px; height: 86px; opacity: 0; box-shadow: 0 0 70px var(--blast-color); } }
-
-
-
     .defender-panel { min-height: 720px; display: grid; grid-template-rows: auto 1fr; transition: border-color 140ms ease, box-shadow 140ms ease; }
-
     .defender-panel.flash { border-color: var(--line-hot); box-shadow: 0 0 0 1px rgba(70,240,255,0.32), 0 0 70px rgba(70,240,255,0.20); }
-
     .defender-grid { display: grid; grid-template-columns: minmax(360px, 0.92fr) minmax(420px, 1.08fr); gap: 14px; padding: 14px; min-height: 0; }
-
     .defense-stack { display: grid; gap: 14px; min-height: 0; }
-
     .subpanel { border: 1px solid var(--line); border-radius: 8px; background: rgba(0,0,0,0.17); overflow: hidden; min-width: 0; }
-
     .subhead { min-height: 48px; padding: 12px; border-bottom: 1px solid var(--line); display: flex; align-items: center; justify-content: space-between; gap: 10px; }
-
     .subhead h3 { margin: 0; font-size: 14px; }
-
     .subhead span { color: var(--muted); font-size: 10px; }
-
     .demo-phase { padding: 14px; text-align: center; font-weight: 800; color: var(--cyan); border-bottom: 1px solid var(--line); background: rgba(70, 240, 255, 0.045); }
-
-
-
     .waf-card-body, .ai-body, .target-body { padding: 13px; display: grid; gap: 13px; }
-
     .waf-state { display: grid; grid-template-columns: 1fr auto; gap: 12px; align-items: center; }
-
     .waf-state strong { display: block; font-size: 24px; color: var(--green); line-height: 1.1; }
-
     .waf-state span { color: var(--muted); font-size: 11px; }
-
     .trend { width: 124px; height: 48px; }
-
     .rule-stack { display: grid; gap: 7px; }
-
     .stack-row { display: grid; grid-template-columns: 90px 1fr 70px; align-items: center; gap: 8px; color: var(--muted); font-size: 10px; }
-
     .stack-bar, .prob-track, .mini-meter { border-radius: 999px; background: rgba(143, 163, 184, 0.16); overflow: hidden; }
-
     .stack-bar { height: 10px; }
-
     .stack-bar i, .prob-track i, .mini-meter i { display: block; width: var(--w); height: 100%; border-radius: inherit; background: var(--c); transition: width 220ms ease; }
-
     .prob-row { display: grid; grid-template-columns: 90px 1fr 74px; align-items: center; gap: 9px; color: var(--muted); font-size: 11px; }
-
     .prob-track { height: 12px; }
-
     .waf-log { display: grid; grid-template-rows: auto minmax(220px, 1fr); min-height: 310px; }
-
     .waf-log-list { padding: 10px; display: grid; gap: 7px; max-height: 330px; overflow: auto; align-content: start; }
-
     .sev { min-width: 48px; text-align: center; border-radius: 6px; padding: 4px 6px; color: #061017; font-weight: 800; font-size: 10px; }
-
     .sev.crit { background: var(--red); color: #fff; }
-
     .sev.warn { background: var(--yellow); }
-
     .sev.info { background: var(--blue); }
-
     .sev.note { background: var(--green); }
-
-
-
     .token-table { display: grid; gap: 7px; }
-
     .token-row { display: grid; grid-template-columns: 1fr 160px 100px; gap: 8px; align-items: center; padding: 8px; border: 1px solid var(--line); border-radius: 8px; background: rgba(0,0,0,0.18); font-size: 10px; color: var(--muted); }
-
     .token-row b { color: var(--ink); overflow-wrap: anywhere; }
-
-
-
     .stat-grid { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 10px; }
-
     .stat-card { min-height: 86px; padding: 12px; border: 1px solid var(--line); border-radius: 8px; background: rgba(0,0,0,0.20); display: grid; align-content: space-between; }
-
     .stat-card span { color: var(--muted); font-size: 10px; }
-
     .stat-card strong { font-size: clamp(18px, 2vw, 26px); line-height: 1; }
-
-
-
     .target-screen { border: 1px solid rgba(70, 240, 255, 0.18); border-radius: 8px; background: linear-gradient(rgba(70, 240, 255, 0.035) 1px, transparent 1px), linear-gradient(90deg, rgba(70, 240, 255, 0.035) 1px, transparent 1px), #061017; background-size: 18px 18px; overflow: hidden; box-shadow: inset 0 0 34px rgba(70, 240, 255, 0.08); }
-
     .target-top { min-height: 40px; display: flex; justify-content: space-between; align-items: center; gap: 10px; padding: 10px 12px; border-bottom: 1px solid rgba(70, 240, 255, 0.16); background: rgba(70, 240, 255, 0.05); color: var(--muted); font-size: 10px; }
-
     .target-state { color: var(--green); font-weight: 800; }
-
     .target-state.hot { color: var(--red); text-shadow: 0 0 18px rgba(255, 92, 122, 0.38); }
-
     .target-grid { display: grid; grid-template-columns: 124px 1fr; gap: 12px; padding: 12px; align-items: stretch; }
-
     .cpu-gauge { min-height: 124px; border-radius: 8px; display: grid; place-items: center; background: radial-gradient(circle at center, #061017 0 54%, transparent 55%), conic-gradient(var(--gauge-color) calc(var(--cpu) * 1%), rgba(143, 163, 184, 0.16) 0); border: 1px solid var(--line); position: relative; }
-
     .cpu-gauge span { font-size: 24px; font-weight: 800; color: var(--ink); line-height: 1; }
-
     .cpu-gauge small { position: absolute; bottom: 27px; color: var(--muted); font-size: 10px; }
-
     .target-readouts { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; }
-
     .readout { min-height: 58px; border: 1px solid var(--line); border-radius: 8px; background: rgba(0,0,0,0.23); padding: 9px; display: grid; gap: 5px; }
-
     .readout span { color: var(--muted); font-size: 10px; }
-
     .readout strong { color: var(--ink); font-size: 16px; }
-
     .process-table { margin: 0 12px 12px; display: grid; gap: 7px; }
-
     .process-row { display: grid; grid-template-columns: 1fr 160px 70px; gap: 8px; align-items: center; min-height: 34px; border: 1px solid var(--line); border-radius: 8px; background: rgba(0,0,0,0.22); padding: 8px; color: var(--muted); font-size: 10px; }
-
     .process-row b { color: var(--ink); overflow-wrap: anywhere; }
-
     .target-log-list { display: grid; gap: 7px; max-height: 158px; overflow: auto; }
-
     .target-log-line { display: grid; grid-template-columns: 70px auto 1fr; gap: 8px; align-items: center; min-height: 34px; padding: 8px; border: 1px solid var(--line); border-radius: 8px; background: rgba(0,0,0,0.22); color: var(--muted); font-size: 10px; }
-
     .target-log-line b { color: var(--ink); }
-
-
-
     .bottom-dashboard { display: grid; grid-template-columns: minmax(360px, 0.9fr) minmax(360px, 1fr) auto; gap: 14px; padding: 0 16px 16px; align-items: stretch; }
-
     .dock { border: 1px solid var(--line); border-radius: 8px; background: linear-gradient(180deg, rgba(255,255,255,0.03), rgba(255,255,255,0.01)), var(--panel); box-shadow: var(--shadow); padding: 14px; min-width: 0; }
-
     .param-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 10px; }
-
     .param { display: grid; gap: 8px; min-height: 70px; }
-
     .param label { color: var(--muted); font-size: 10px; }
-
     .param strong { font-size: 19px; color: var(--cyan); }
-
     .mini-meter { height: 7px; }
-
     .mini-meter i { background: linear-gradient(90deg, var(--blue), var(--cyan)); }
-
     .research-tags { display: flex; flex-wrap: wrap; gap: 8px; align-content: center; }
-
     .research-tags span { padding: 9px 11px; border: 1px solid var(--line); border-radius: 8px; color: var(--muted); background: rgba(0,0,0,0.16); font-size: 11px; }
-
     .dock-actions { display: grid; grid-auto-flow: column; gap: 10px; }
-
     .dock-actions button { min-width: 150px; border: 1px solid rgba(70, 240, 255, 0.36); border-radius: 8px; background: rgba(70, 240, 255, 0.08); color: var(--cyan); font-weight: 800; cursor: pointer; }
-
-
-
-
-
-
-
     .comparison-panel { padding: 14px; border-bottom: 1px solid var(--line); background: rgba(0,0,0,0.10); }
-
     .comparison-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
-
     .compare-card { position: relative; border: 1px solid var(--line); border-radius: 10px; background: rgba(0,0,0,0.22); overflow: hidden; min-height: 190px; }
-
     .compare-card.left { border-color: rgba(255,92,122,.38); box-shadow: inset 0 0 28px rgba(255,92,122,.05); }
-
     .compare-card.right { border-color: rgba(103,242,154,.38); box-shadow: inset 0 0 28px rgba(103,242,154,.05); }
-
     .compare-head { min-height: 48px; padding: 12px; border-bottom: 1px solid var(--line); display: flex; justify-content: space-between; align-items: center; gap: 10px; }
-
     .compare-head h3 { margin: 0; font-size: 14px; }
-
     .compare-head span { color: var(--muted); font-size: 10px; }
-
     .compare-body { padding: 12px; display: grid; gap: 9px; }
-
     .compare-row { display: grid; grid-template-columns: 110px 1fr auto; gap: 8px; align-items: center; padding: 8px; border: 1px solid var(--line); border-radius: 8px; background: rgba(0,0,0,0.18); color: var(--muted); font-size: 10px; }
-
     .compare-row b { color: var(--ink); }
-
     .compare-result { margin-top: 2px; padding: 12px; border-radius: 8px; text-align: center; font-size: 22px; font-weight: 800; letter-spacing: .04em; }
-
     .compare-result.bypass { color: #fff; background: rgba(255,92,122,.18); border: 1px solid rgba(255,92,122,.46); text-shadow: 0 0 20px rgba(255,92,122,.28); }
-
     .compare-result.block { color: var(--green); background: rgba(103,242,154,.12); border: 1px solid rgba(103,242,154,.42); text-shadow: 0 0 20px rgba(103,242,154,.22); }
-
     .compare-card.dimmed { opacity: .45; filter: grayscale(.35); }
-
     .compare-card.active { animation: compare-pop 620ms ease-out; }
-
     @keyframes compare-pop { 0% { transform: translateY(0); } 45% { transform: translateY(-3px); } 100% { transform: translateY(0); } }
-
-
-
     @media (max-width: 1280px) {
-
       .topbar, .arena, .defender-grid, .bottom-dashboard, .comparison-grid { grid-template-columns: 1fr; }
-
       .status-cluster { grid-template-columns: repeat(4, minmax(120px, 1fr)); min-width: 0; }
-
       .battle-zone { min-height: 130px; }
-
       .battle-label { writing-mode: horizontal-tb; }
-
       .battle-zone::before { inset: 50% 18px auto 18px; width: auto; height: 1px; transform: translateY(-0.5px); background: repeating-linear-gradient(90deg, rgba(70,240,255,0.65) 0 10px, transparent 10px 22px); }
-
       .battle-zone::after { inset: 50% 0 auto 0; height: 18px; width: auto; transform: translateY(-50%); }
-
     }
-
     @media (max-width: 720px) {
-
       .topbar { padding: 22px 14px 16px; }
-
       .stat-grid, .param-grid, .target-grid, .target-readouts, .tech-grid, .status-cluster { grid-template-columns: 1fr; }
-
       .status-cluster { grid-template-columns: repeat(2, minmax(0, 1fr)); }
-
       .arena { padding: 12px; }
-
       .attack-button { grid-template-columns: 42px 1fr; }
-
       .attack-meta { grid-column: 1 / -1; text-align: left; }
-
       .attack-log-line, .waf-log-line, .target-log-line, .process-row, .token-row { grid-template-columns: 1fr; }
-
       .dock-actions { grid-auto-flow: row; }
-
     }
-
   </style>
-
 </head>
-
 <body>
-
   <div class="lab">
-
     <header class="topbar">
-
       <div class="brand">
-
         <div class="title-line">
-
           <h1>WAF-AI BATTLE LAB</h1>
-
           <span class="live-pill"><span class="status-dot"></span>LIVE</span>
-
         </div>
-
         <div class="subtitle">LLM / DDQN Payload Simulation with Browser Verification and Decoder + WAF Defense</div>
-
       </div>
-
       <section class="status-cluster" aria-label="system status">
-
         <div class="status-light"><span class="status-dot blue"></span><div><b>LLM Generator</b><span id="llm-status">READY</span></div></div>
-
         <div class="status-light"><span class="status-dot cyan"></span><div><b>DDQN Mutator</b><span id="ddqn-status">ONLINE</span></div></div>
-
         <div class="status-light"><span class="status-dot"></span><div><b>Decoder + WAF</b><span id="waf-status">GUARDING</span></div></div>
-
         <div class="clock-card"><span>UTC TIME</span><strong id="utc-time">--:--:--</strong></div>
-
       </section>
-
     </header>
-
-
-
     <main class="arena">
-
       <section class="panel attacker-panel" aria-labelledby="attacker-title">
-
         <div class="panel-title">
-
           <div>
-
             <h2 id="attacker-title">ATTACKER PANEL</h2>
-
             <p>安全研究模擬台。所有 payload 皆遮罩，只顯示分類、技術鏈與防禦結果。</p>
-
           </div>
-
           <span class="micro-badge">SANITIZED</span>
-
         </div>
-
-
-
         <section class="demo-control">
-
           <button class="demo-button" type="button" id="demo">▶ DEMO</button>
-
           <div class="demo-phase-mini" id="demo-phase-mini">READY：按下後會自動展示 LLM 生成 → DDQN 變異 → Browser Verification → Normal WAF Bypass → Decoder + WAF Block。</div>
-
         </section>
-
-
-
         <nav class="tabs" role="tablist" aria-label="attacker modes">
-
           <button class="tab active" type="button" role="tab" aria-selected="true" data-tab="presets">快速預設</button>
-
           <button class="tab" type="button" role="tab" aria-selected="false" data-tab="builder" style="display:none;">
-
             固定樣本集
-
           </button>
-
         </nav>
-
-
-
         <div class="tab-stage">
-
           <div class="tab-page active" id="presets" role="tabpanel">
-
             <button class="attack-button selected" type="button" data-attack="normal" style="--attack-color: var(--green);">
-
               <span class="attack-icon">N</span>
-
               <span class="attack-copy"><strong>Normal Request</strong><span>安全基準請求，用來確認正常流量不會被誤擋。</span></span>
-
               <span class="attack-meta">BASELINE</span>
-
             </button>
-
             <button class="attack-button" type="button" data-attack="llm" style="--attack-color: var(--violet);">
-
               <span class="attack-icon">L</span>
-
               <span class="attack-copy"><strong>LLM Generated Malicious Payload</strong><span>LLM 生成的惡意樣本。</span></span>
-
               <span class="attack-meta">SAMPLE A</span>
-
             </button>
-
             <button class="attack-button" type="button" data-attack="encodedObfuscated" style="--attack-color: var(--yellow);">
-
               <span class="attack-icon">E/O</span>
-
               <span class="attack-copy"><strong>Encoded + Obfuscated Payload</strong><span>編碼與混淆樣本。</span></span>
-
               <span class="attack-meta">SAMPLE B</span>
-
             </button>
-
             <button class="attack-button" type="button" data-attack="ddqn" style="--attack-color: var(--blue);">
-
               <span class="attack-icon">D</span>
-
               <span class="attack-copy"><strong>DDQN Mutated Payload</strong><span>DDQN 變異樣本。</span></span>
-
               <span class="attack-meta">SAMPLE C</span>
-
             </button>
-
           </div>
-
-
-
           <div class="tab-page builder" id="builder" role="tabpanel" style="display:none;">
-
             <div class="builder-group">
-
               <label>分類</label>
-
               <div class="option-grid">
-
                 <button type="button" class="opt active">編碼</button>
-
                 <button type="button" class="opt">混淆</button>
-
                 <button type="button" class="opt active">分段</button>
-
                 <button type="button" class="opt">規避</button>
-
               </div>
-
             </div>
-
             <div class="builder-group">
-
               <label>技術選擇</label>
-
               <div class="tech-grid">
-
                 <button type="button" class="opt active">UNI</button>
-
                 <button type="button" class="opt">CASE</button>
-
                 <button type="button" class="opt active">SPLIT</button>
-
                 <button type="button" class="opt">CTX</button>
-
               </div>
-
             </div>
-
             <div class="builder-group">
-
               <label>Payload 樣本預覽（遮罩）</label>
-
               <div class="payload-box" id="payload-preview">[NORMAL REQUEST SAMPLE]</div>
-
             </div>
-
             <button class="launch-custom" type="button" id="launch-custom">RUN FIXED SAFE SAMPLE</button>
-
           </div>
-
         </div>
-
-
-
         <section class="attack-log" aria-labelledby="attack-log-title">
-
           <header><strong id="attack-log-title">攻擊日誌</strong><span id="last-response">last response 24ms</span></header>
-
           <div class="attack-log-list" id="attack-log-list" aria-live="polite">
-
             <div class="attack-log-line"><span>00:00:00</span><span class="result-pill info">READY</span><strong>Demo Ready</strong><span>--</span></div>
-
           </div>
-
         </section>
-
       </section>
-
-
-
       <section class="battle-zone" aria-label="battle zone">
-
         <div class="battle-label">DUAL PATH CHECK</div>
-
       </section>
-
-
-
       <section class="panel defender-panel" id="defender-panel" aria-labelledby="defender-title">
-
         <div class="panel-title">
-
           <div>
-
             <h2 id="defender-title">DEFENDER PANEL</h2>
-
             <p>Decoder + WAF Dual-Channel Detection：Path A 或 Path B 任一路徑命中即封鎖。</p>
-
           </div>
-
           <span class="micro-badge" id="defense-mode">GUARDING</span>
-
         </div>
-
-
-
         <div class="demo-phase" id="demo-phase">READY</div>
-
-
-
         <section class="comparison-panel" aria-label="normal waf versus decoder waf comparison">
-
           <div class="comparison-grid">
-
             <div class="compare-card left dimmed" id="normal-compare-card">
-
               <div class="compare-head">
-
                 <h3>Normal WAF</h3>
-
                 <span>decoder disabled</span>
-
               </div>
-
               <div class="compare-body">
-
                 <div class="compare-row"><b>Input</b><span id="normal-input">[WAITING FOR DDQN PAYLOAD]</span><em>same payload</em></div>
-
                 <div class="compare-row"><b>Browser</b><span id="normal-browser">pending</span><em>verified</em></div>
-
                 <div class="compare-row"><b>WAF Check</b><span id="normal-rule">raw CRS only</span><em>no match</em></div>
-
                 <div class="compare-result bypass" id="normal-result">WAITING</div>
-
               </div>
-
             </div>
-
-
-
             <div class="compare-card right dimmed" id="decoder-compare-card">
-
               <div class="compare-head">
-
                 <h3>Decoder + WAF</h3>
-
                 <span>dual-channel enabled</span>
-
               </div>
-
               <div class="compare-body">
-
                 <div class="compare-row"><b>Input</b><span id="decoder-input">[WAITING FOR SAME PAYLOAD]</span><em>same payload</em></div>
-
                 <div class="compare-row"><b>Path A</b><span id="decoder-path-a">decode + CRS + JS check</span><em>pending</em></div>
-
                 <div class="compare-row"><b>Path B</b><span id="decoder-path-b">raw CRS check</span><em>pending</em></div>
-
                 <div class="compare-result block" id="decoder-result">WAITING</div>
-
               </div>
-
             </div>
-
           </div>
-
         </section>
-
-
-
-
-
         <div class="defender-grid">
-
           <div class="defense-stack">
-
             <section class="subpanel">
-
               <div class="subhead"><h3>WAF 狀態卡</h3><span id="waf-mode-label">dual-channel ready</span></div>
-
               <div class="waf-card-body">
-
                 <div class="waf-state">
-
                   <div><strong id="waf-main-state">ACTIVE</strong><span id="waf-main-desc">Decoder + CRS rule engine running</span></div>
-
                   <svg class="trend" viewBox="0 0 124 48" role="img" aria-label="detection trend">
-
                     <path d="M2 38 C18 34 24 24 38 25 S58 38 72 26 90 12 122 8" fill="none" stroke="#67f29a" stroke-width="3" stroke-linecap="round"/>
-
                     <path d="M2 46 L2 38 C18 34 24 24 38 25 S58 38 72 26 90 12 122 8 L122 46 Z" fill="rgba(103,242,154,.13)"/>
-
                   </svg>
-
                 </div>
-
                 <div class="rule-stack">
-
                   <div class="stack-row"><span>LLM</span><div class="stack-bar"><i id="llm-bar" style="--w: 0%; --c: var(--blue);"></i></div><b id="llm-label">idle</b></div>
-
                   <div class="stack-row"><span>DDQN</span><div class="stack-bar"><i id="ddqn-bar" style="--w: 0%; --c: var(--cyan);"></i></div><b id="ddqn-label">idle</b></div>
-
                   <div class="stack-row"><span>Browser</span><div class="stack-bar"><i id="browser-bar" style="--w: 0%; --c: var(--yellow);"></i></div><b id="browser-label">pending</b></div>
-
                   <div class="stack-row"><span>Decoder</span><div class="stack-bar"><i id="decoder-bar" style="--w: 100%; --c: var(--green);"></i></div><b id="decoder-label">ACTIVE</b></div>
-
                 </div>
-
                 <div class="prob-row"><span>Decision</span><div class="prob-track"><i id="detect-bar" style="--w: 100%; --c: var(--green);"></i></div><b id="detect-rate">Path A∨B</b></div>
-
               </div>
-
             </section>
-
-
-
             <section class="subpanel waf-log">
-
               <div class="subhead"><h3>Decoder + WAF 即時日誌流</h3><span>AUTO SCROLL</span></div>
-
               <div class="waf-log-list" id="waf-log-list" aria-live="polite">
-
                 <div class="waf-log-line"><span>00:00:00</span><span class="sev note">NOTE</span><strong>system ready for safe visual simulation</strong><span>dual-channel</span></div>
-
               </div>
-
             </section>
-
           </div>
-
-
-
           <div class="defense-stack">
-
             <section class="subpanel ai-panel">
-
               <div class="subhead"><h3>Dual-Channel Detection 面板</h3><span id="infer-time">decoder pass --</span></div>
-
               <div class="ai-body">
-
                 <div class="token-table" id="token-table"></div>
-
               </div>
-
             </section>
-
-
-
             <section class="subpanel">
-
               <div class="subhead"><h3>流量統計</h3><span>rolling session</span></div>
-
               <div class="waf-card-body">
-
                 <div class="stat-grid">
-
                   <div class="stat-card"><span>Total</span><strong id="stat-total">0</strong></div>
-
                   <div class="stat-card"><span>Blocked</span><strong id="stat-blocked">0</strong></div>
-
                   <div class="stat-card"><span>Bypassed</span><strong id="stat-bypassed">0</strong></div>
-
                   <div class="stat-card"><span>Response</span><strong id="stat-response">--</strong></div>
-
                 </div>
-
               </div>
-
             </section>
-
-
-
             <section class="subpanel target-panel">
-
               <div class="subhead"><h3>Browser Verification</h3><span id="target-host-label">safe runtime simulation</span></div>
-
               <div class="target-body">
-
                 <div class="target-screen">
-
                   <div class="target-top">
-
                     <span id="target-state" class="target-state">NOT EXECUTABLE</span>
-
                     <span>LAB SANDBOX / safe visual simulation only</span>
-
                   </div>
-
                   <div class="target-grid">
-
                     <div class="cpu-gauge" id="cpu-gauge" style="--cpu: 0; --gauge-color: var(--green);">
-
                       <span id="target-cpu">0%</span>
-
                       <small>VERDICT</small>
-
                     </div>
-
                     <div class="target-readouts">
-
                       <div class="readout"><span>alert()</span><strong id="target-alert">not triggered</strong></div>
-
                       <div class="readout"><span>cookie access</span><strong id="target-cookie">no</strong></div>
-
                       <div class="readout"><span>fetch request</span><strong id="target-fetch">no</strong></div>
-
                       <div class="readout"><span>browser verdict</span><strong id="target-verdict">not executable</strong></div>
-
                     </div>
-
                   </div>
-
                   <div class="process-table" id="process-table">
-
                     <div class="process-row"><b>Incoming Payload</b><span id="raw-payload-label">[NORMAL REQUEST SAMPLE]</span><span>RAW</span></div>
-
                     <div class="process-row"><b>Decoder Output</b><span id="decoded-label">[NORMALIZED SAFE REQUEST]</span><span>DECODED</span></div>
-
                     <div class="process-row"><b>Final Decision</b><span id="final-decision-label">NOT EXECUTABLE</span><span>RESULT</span></div>
-
                   </div>
-
                 </div>
-
                 <div>
-
                   <div class="subhead" style="border:0;padding:0 0 8px;min-height:0;"><h3>靶機 log</h3><span>target telemetry</span></div>
-
                   <div class="target-log-list" id="target-log-list" aria-live="polite">
-
                     <div class="target-log-line"><span>00:00:00</span><span class="sev note">NOTE</span><b>target idle, browser verifier ready</b></div>
-
                   </div>
-
                 </div>
-
               </div>
-
             </section>
-
           </div>
-
         </div>
-
       </section>
-
     </main>
-
-
-
     <footer class="bottom-dashboard">
-
       <section class="dock">
-
         <div class="param-grid">
-
           <div class="param"><label>DDQN Epsilon</label><strong id="epsilon">0.182</strong><div class="mini-meter"><i id="epsilon-meter" style="--w: 18%;"></i></div></div>
-
           <div class="param"><label>Learning Rate</label><strong id="learning-rate">0.0007</strong><div class="mini-meter"><i id="lr-meter" style="--w: 70%;"></i></div></div>
-
           <div class="param"><label>Batch Size</label><strong id="batch-size">64</strong><div class="mini-meter"><i id="batch-meter" style="--w: 50%;"></i></div></div>
-
         </div>
-
       </section>
-
       <section class="dock research-tags" aria-label="research tags">
-
         <span>#LLMGeneratedPayload</span><span>#DDQNMutation</span><span>#BrowserVerification</span><span>#DecoderWAF</span><span>#PathA_OR_PathB</span>
-
       </section>
-
       <section class="dock dock-actions">
-
         <button type="button" id="export-logs">EXPORT LOGS</button>
-
         <button type="button" id="settings">SYSTEM SETTINGS</button>
-
       </section>
-
     </footer>
-
   </div>
-
-
-
   <script>
-
     const attacks = {
-
       normal: {
-
         name: "Normal Request",
-
         color: "var(--green)",
-
         response: [18, 42],
-
         sample: "[NORMAL REQUEST SAMPLE]",
-
         decoded: "[NORMALIZED SAFE REQUEST]",
-
         normalWaf: { blocked: false, blockRate: 0, difficulty: "baseline", reason: "benign baseline allowed" },
-
         pathA: { crs: false, js: false, header: false, blocked: false },
-
         pathB: { crs: false, blocked: false },
-
         browser: { alert: false, cookie: false, fetch: false },
-
         stage: "baseline"
-
       },
-
       encodedObfuscated: {
-
         name: "Encoded + Obfuscated Payload",
-
         color: "var(--yellow)",
-
         response: [58, 120],
-
         sample: "[ENCODED + OBFUSCATED PAYLOAD SAMPLE]",
-
         decoded: "[DECODED AND NORMALIZED OBFUSCATED PAYLOAD]",
-
         normalWaf: { blocked: false, blockRate: 0.7, difficulty: "medium", reason: "probabilistic raw CRS check for encoded / obfuscated pattern" },
-
         pathA: { crs: true, js: true, header: false, blocked: true },
-
         pathB: { crs: false, blocked: false },
-
         browser: { alert: true, cookie: true, fetch: false },
-
         stage: "manual"
-
       },
-
       llm: {
-
         name: "LLM Generated Malicious Payload",
-
         color: "var(--violet)",
-
         response: [62, 132],
-
         sample: "[LLM GENERATED MALICIOUS PAYLOAD SAMPLE]",
-
         decoded: "[DECODED LLM GENERATED MALICIOUS PAYLOAD]",
-
         normalWaf: { blocked: true, blockRate: 0.9, difficulty: "easy", reason: "probabilistic raw CRS / signature check for LLM payload" },
-
         pathA: { crs: true, js: true, header: true, blocked: true },
-
         pathB: { crs: true, blocked: true },
-
         browser: { alert: true, cookie: false, fetch: false },
-
         stage: "manual"
-
       },
-
       ddqn: {
-
         name: "DDQN Mutated Payload",
-
         color: "var(--blue)",
-
         response: [90, 180],
-
         sample: "[DDQN MUTATED PAYLOAD SAMPLE]",
-
         decoded: "[DECODED DDQN MUTATED SAMPLE]",
-
         normalWaf: { blocked: false, blockRate: 0.1, difficulty: "hard", reason: "probabilistic raw CRS check for DDQN mutation pattern" },
-
         pathA: { crs: true, js: true, header: false, blocked: true },
-
         pathB: { crs: false, blocked: false },
-
         browser: { alert: true, cookie: true, fetch: true },
-
         stage: "manual"
-
       }
-
     };
-
-
-
     const state = { total: 0, blocked: 0, bypassed: 0, demoRunning: false };
-
     const $ = s => document.querySelector(s);
-
     const $$ = s => Array.from(document.querySelectorAll(s));
-
     const rand = (a,b) => Math.floor(Math.random() * (b - a + 1)) + a;
-
     const nowUTC = () => new Date().toISOString().slice(11,19) + " UTC";
-
     const sleep = ms => new Promise(r => setTimeout(r, ms));
-
-
-
     function setClock(){ $("#utc-time").textContent = nowUTC(); }
-
-
-
     function setPhase(text){
-
       $("#demo-phase").textContent = text;
-
       $("#demo-phase-mini").textContent = text;
-
     }
-
-
-
     function resetAllUI(){
-
       // ===== counters =====
-
       state.total = 0;
-
       state.blocked = 0;
-
       state.bypassed = 0;
-
-
-
       $("#stat-total").textContent = "0";
-
       $("#stat-blocked").textContent = "0";
-
       $("#stat-bypassed").textContent = "0";
-
       $("#stat-response").textContent = "--";
-
       $("#last-response").textContent = "last response --";
-
-
-
       // ===== logs =====
-
       $("#waf-log-list").innerHTML = `<div class="waf-log-line"><span>00:00:00</span><span class="sev note">NOTE</span><strong>system ready for safe visual simulation</strong><span>dual-channel</span></div>`;
-
       $("#attack-log-list").innerHTML = `<div class="attack-log-line"><span>00:00:00</span><span class="result-pill info">READY</span><strong>Demo Ready</strong><span>--</span></div>`;
-
       $("#target-log-list").innerHTML = `<div class="target-log-line"><span>00:00:00</span><span class="sev note">NOTE</span><b>target idle, browser verifier ready</b></div>`;
-
-
-
       // ===== compare panel =====
-
       resetComparePanel();
-
-
-
       // ===== progress bars / status =====
-
       setProgress({
-
         llm: 0,
-
         ddqn: 0,
-
         browser: 0,
-
         decoder: 100,
-
         llmText: "ready",
-
         ddqnText: "online",
-
         browserText: "pending",
-
         decoderText: "ACTIVE"
-
       });
-
-
-
       // ===== browser verification panel =====
-
       setBrowserVerification({ alert: false, cookie: false, fetch: false }, "NOT EXECUTABLE");
-
       $("#target-state").classList.remove("hot");
-
       $("#target-cpu").textContent = "0%";
-
       $("#cpu-gauge").style.setProperty("--cpu", 0);
-
       $("#cpu-gauge").style.setProperty("--gauge-color", "var(--green)");
-
-
-
       // ===== payload / decision panel =====
-
       $("#payload-preview").textContent = "[NORMAL REQUEST SAMPLE]";
-
       $("#raw-payload-label").textContent = "[NORMAL REQUEST SAMPLE]";
-
       $("#decoded-label").textContent = "[NORMALIZED SAFE REQUEST]";
-
       $("#final-decision-label").textContent = "READY";
-
       $("#token-table").innerHTML = "";
-
       $("#infer-time").textContent = "decoder pass --";
-
-
-
       // ===== WAF state =====
-
       $("#waf-main-state").textContent = "ACTIVE";
-
       $("#waf-main-desc").textContent = "Decoder + CRS rule engine running";
-
       $("#waf-status").textContent = "GUARDING";
-
       $("#waf-mode-label").textContent = "dual-channel ready";
-
       $("#defense-mode").textContent = "GUARDING";
-
-
-
       // ===== selected preset =====
-
       $$(".attack-button").forEach(btn => btn.classList.toggle("selected", btn.dataset.attack === "normal"));
-
-
-
       // ===== phase =====
-
       setPhase("READY");
-
     }
-
-
-
-
-
     function resetComparePanel(){
-
       ["normal-compare-card", "decoder-compare-card"].forEach(id => {
-
         const card = document.getElementById(id);
-
         card.classList.add("dimmed");
-
         card.classList.remove("active");
-
       });
-
       $("#normal-input").textContent = "[WAITING FOR DDQN PAYLOAD]";
-
       $("#normal-browser").textContent = "pending";
-
       $("#normal-rule").textContent = "raw CRS only";
-
       $("#normal-result").textContent = "WAITING";
-
       $("#decoder-input").textContent = "[WAITING FOR SAME PAYLOAD]";
-
       $("#decoder-path-a").textContent = "decode + CRS + JS check";
-
       $("#decoder-path-b").textContent = "raw CRS check";
-
       $("#decoder-result").textContent = "WAITING";
-
     }
-
-
-
     function setCompareNormalBypass(payload){
-
       const card = $("#normal-compare-card");
-
       card.classList.remove("dimmed");
-
       card.classList.add("active");
-
       $("#normal-input").textContent = payload;
-
       $("#normal-browser").textContent = "attack behavior confirmed";
-
       $("#normal-rule").textContent = "no decoded inspection, raw CRS missed";
-
       $("#normal-result").textContent = "BYPASSED";
-
     }
-
-
-
     function setCompareDecoderBlock(payload){
-
       const card = $("#decoder-compare-card");
-
       card.classList.remove("dimmed");
-
       card.classList.add("active");
-
       $("#decoder-input").textContent = payload;
-
       $("#decoder-path-a").textContent = "decoded payload matched CRS / JS checks";
-
       $("#decoder-path-b").textContent = "raw payload also checked as backup";
-
       $("#decoder-result").textContent = "BLOCKED";
-
     }
-
-
-
     function dualPanelRows(c, finalResult){
-
       const rows = [
-
         ["Incoming Payload", c.sample, "RAW"],
-
         ["Decoder Output", c.decoded, "NORMALIZED"],
-
         ["Path A: CRS", c.pathA.crs ? "matched" : "not matched", c.pathA.crs ? "BLOCK" : "PASS"],
-
         ["Path A: JS Obfuscation", c.pathA.js ? "matched" : "not matched", c.pathA.js ? "BLOCK" : "PASS"],
-
         ["Path A: Header Check", c.pathA.header ? "matched" : "not matched", c.pathA.header ? "BLOCK" : "PASS"],
-
         ["Path B: CRS", c.pathB.crs ? "matched" : "not matched", c.pathB.crs ? "BLOCK" : "PASS"],
-
         ["Final Decision", (c.pathA.blocked || c.pathB.blocked) ? "Path A OR Path B blocked" : "Path A OR Path B clear", finalResult]
-
       ];
-
       return rows.map(r => `<div class="token-row"><b>${r[0]}</b><span>${r[1]}</span><span>${r[2]}</span></div>`).join("");
-
     }
-
-
-
     function addAttackLog(c, response, result){
-
       const line = document.createElement("div");
-
       const cls = result.includes("BLOCK") ? "blocked" : result.includes("BYPASS") ? "bypassed" : "info";
-
       line.className = "attack-log-line";
-
       line.innerHTML = `<span>${nowUTC().replace(" UTC","")}</span><span class="result-pill ${cls}">${result}</span><strong>${c.name}</strong><span>${response}ms</span>`;
-
       const list = $("#attack-log-list");
-
       list.prepend(line);
-
       while(list.children.length > 8) list.lastElementChild.remove();
-
     }
-
-
-
     function addWafLogLine(message, severity="info", tail="dual-channel"){
-
       const line = document.createElement("div");
-
       line.className = "waf-log-line";
-
       line.innerHTML = `<span>${nowUTC().replace(" UTC","")}</span><span class="sev ${severity}">${severity.toUpperCase()}</span><strong>${message}</strong><span>${tail}</span>`;
-
       const list = $("#waf-log-list");
-
       list.prepend(line);
-
       while(list.children.length > 14) list.lastElementChild.remove();
-
     }
-
-
-
     function addTargetLog(message, severity="note"){
-
       const line = document.createElement("div");
-
       line.className = "target-log-line";
-
       line.innerHTML = `<span>${nowUTC().replace(" UTC","")}</span><span class="sev ${severity}">${severity.toUpperCase()}</span><b>${message}</b>`;
-
       const list = $("#target-log-list");
-
       list.prepend(line);
-
       while(list.children.length > 9) list.lastElementChild.remove();
-
     }
-
-
-
     function launchPacket(c, storm=false){
-
       const zone = $(".battle-zone");
-
       const count = storm ? rand(4,7) : 1;
-
       for(let i = 0; i < count; i++){
-
         const packet = document.createElement("span");
-
         packet.className = "packet";
-
         packet.style.setProperty("--packet-color", c.color);
-
         packet.style.setProperty("--drift", `${rand(-24,24)}px`);
-
         packet.style.animationDelay = `${i * 90}ms`;
-
         zone.appendChild(packet);
-
         packet.addEventListener("animationend", () => packet.remove(), { once:true });
-
       }
-
       setTimeout(() => {
-
         const blast = document.createElement("span");
-
         blast.className = "explosion";
-
         blast.style.setProperty("--blast-color", c.color);
-
         zone.appendChild(blast);
-
         blast.addEventListener("animationend", () => blast.remove(), { once:true });
-
         $("#defender-panel").classList.add("flash");
-
         setTimeout(() => $("#defender-panel").classList.remove("flash"), 520);
-
       }, 1120);
-
     }
-
-
-
     function setBrowserVerification(browser, labelOverride=null){
-
       const executable = browser.alert || browser.cookie || browser.fetch;
-
       $("#target-alert").textContent = browser.alert ? "triggered" : "not triggered";
-
       $("#target-cookie").textContent = browser.cookie ? "yes" : "no";
-
       $("#target-fetch").textContent = browser.fetch ? "yes" : "no";
-
       $("#target-verdict").textContent = executable ? "executable" : "not executable";
-
       $("#target-cpu").textContent = executable ? "100%" : "0%";
-
       $("#cpu-gauge").style.setProperty("--cpu", executable ? 100 : 0);
-
       $("#cpu-gauge").style.setProperty("--gauge-color", executable ? "var(--red)" : "var(--green)");
-
       if(labelOverride){ $("#target-state").textContent = labelOverride; }
-
       else { $("#target-state").textContent = executable ? "EXECUTABLE" : "NOT EXECUTABLE"; }
-
       $("#target-state").classList.toggle("hot", executable && labelOverride !== "BLOCKED");
-
     }
-
-
-
     function resolveNormalWafDecision(c){
-
       if (typeof c.forceNormalWafBlocked === "boolean") {
-
         return {
-
           blocked: c.forceNormalWafBlocked,
-
           reason: c.normalWaf?.reason || "fixed demo result",
-
           rollText: "fixed demo"
-
         };
-
       }
-
-
-
       const rate = typeof c.normalWaf?.blockRate === "number"
-
         ? c.normalWaf.blockRate
-
         : (c.normalWaf?.blocked ? 1 : 0);
-
-
-
       const blocked = Math.random() < rate;
-
       const percent = Math.round(rate * 100);
-
       const difficulty = c.normalWaf?.difficulty || "manual";
-
       const resultText = blocked ? "blocked this run" : "missed this run";
-
-
-
       return {
-
         blocked,
-
         reason: `${c.normalWaf?.reason || "raw CRS probabilistic check"} (${percent}% block chance, ${difficulty}, ${resultText})`,
-
         rollText: `${percent}% block chance`
-
       };
-
     }
-
-
-
     function updateScenario(c, response, mode="decoder"){
-
       const browserExecutable = c.browser.alert || c.browser.cookie || c.browser.fetch;
-
       const normalDecision = resolveNormalWafDecision(c);
-
       const normalWafBlocked = normalDecision.blocked;
-
       const decoderBlocked = c.pathA.blocked || c.pathB.blocked;
-
       const isNormalWafOnly = mode === "normal-waf";
-
-
-
       // ===== 左邊：Normal WAF =====
-
       let normalResult = "ALLOWED";
-
       let normalRuleText = normalDecision.reason || "raw CRS allowed benign request";
-
       if (normalWafBlocked) {
-
         normalResult = "BLOCKED";
-
       } else if (browserExecutable) {
-
         normalResult = "BYPASSED";
-
       }
-
-
-
       document.getElementById("normal-input").textContent = c.sample;
-
       document.getElementById("normal-browser").textContent =
-
         browserExecutable ? "attack behavior confirmed" : "benign request";
-
-
-
       document.getElementById("normal-rule").textContent = normalRuleText;
-
       document.getElementById("normal-result").textContent = normalResult;
-
       document.getElementById("normal-result").className =
-
         normalResult === "BYPASSED" ? "compare-result bypass" : "compare-result block";
-
       document.getElementById("normal-compare-card").classList.remove("dimmed");
-
-
-
       // STEP 4 只測 Normal WAF，右邊 Decoder + WAF 不應該同步顯示 BYPASSED
-
       if (isNormalWafOnly) {
-
         document.getElementById("decoder-compare-card").classList.add("dimmed");
-
         document.getElementById("decoder-input").textContent = "[SAME PAYLOAD - NOT TESTED YET]";
-
         document.getElementById("decoder-path-a").textContent = "decoder disabled in this step";
-
         document.getElementById("decoder-path-b").textContent = "waiting for Step 5";
-
         document.getElementById("decoder-result").textContent = "WAITING";
-
         document.getElementById("decoder-result").className = "compare-result block";
-
       } else {
-
         // ===== 右邊：Decoder + WAF =====
-
         let decoderResult = "ALLOWED";
-
         if (decoderBlocked) decoderResult = "BLOCKED";
-
         else if (browserExecutable) decoderResult = "BYPASSED";
-
-
-
         document.getElementById("decoder-input").textContent = c.sample;
-
         document.getElementById("decoder-path-a").textContent =
-
           c.pathA.blocked ? "matched after decoding / normalization" : "not matched";
-
         document.getElementById("decoder-path-b").textContent =
-
           c.pathB.blocked ? "raw CRS matched" : "not matched";
-
         document.getElementById("decoder-result").textContent = decoderResult;
-
         document.getElementById("decoder-result").className =
-
           decoderResult === "BYPASSED" ? "compare-result bypass" : "compare-result block";
-
         document.getElementById("decoder-compare-card").classList.remove("dimmed");
-
       }
-
-
-
       // ===== 系統總結邏輯 =====
-
       const finalResult = isNormalWafOnly
-
         ? (normalWafBlocked ? "BLOCKED BY NORMAL WAF" : (browserExecutable ? "BYPASSED NORMAL WAF" : "ALLOWED BY NORMAL WAF"))
-
         : (decoderBlocked ? "BLOCKED BY DECODER+WAF" : (browserExecutable ? "SUCCESSFUL BYPASS" : "ALLOWED"));
-
-
-
       $("#payload-preview").textContent = c.sample;
-
       $("#token-table").innerHTML = dualPanelRows(c, finalResult);
-
       $("#raw-payload-label").textContent = c.sample;
-
       $("#decoded-label").textContent = c.decoded;
-
       $("#final-decision-label").textContent = finalResult;
-
-
-
       setBrowserVerification(c.browser, finalResult);
-
-
-
       state.total += 1;
-
       if(finalResult.includes("BLOCKED")) state.blocked += 1;
-
       if(finalResult.includes("BYPASS")) state.bypassed += 1;
-
-
-
       $("#stat-total").textContent = state.total;
-
       $("#stat-blocked").textContent = state.blocked;
-
       $("#stat-bypassed").textContent = state.bypassed;
-
       $("#stat-response").textContent = `${response}ms`;
-
       $("#last-response").textContent = `last response ${response}ms`;
-
       $("#infer-time").textContent = `decoder pass ${rand(18,44)}ms`;
-
-
-
       $("#defense-mode").textContent = isNormalWafOnly
-
         ? (normalWafBlocked ? "BLOCKED" : "BYPASSED")
-
         : (decoderBlocked ? "BLOCKED" : "MONITORING");
-
-
-
       updateWafStatusCardForAttack(c.key || c.stage || c.name || "manual", c, normalResult, decoderBlocked, browserExecutable);
-
       addAttackLog(c, response, finalResult);
-
     }
-
-
-
     function runAttack(type){
-
       const c = { ...attacks[type], key: type };
-
       const response = rand(c.response[0], c.response[1]);
-
       $$(".attack-button").forEach(btn => btn.classList.toggle("selected", btn.dataset.attack === type));
-
       launchPacket(c, type === "ddqn");
-
       setTimeout(() => updateScenario(c, response), 1220);
-
     }
-
-
-
     function setProgress({llm=0, ddqn=0, browser=0, decoder=100, llmText="idle", ddqnText="idle", browserText="pending", decoderText="ACTIVE"}){
-
       $("#llm-bar").style.setProperty("--w", `${llm}%`);
-
       $("#ddqn-bar").style.setProperty("--w", `${ddqn}%`);
-
       $("#browser-bar").style.setProperty("--w", `${browser}%`);
-
       $("#decoder-bar").style.setProperty("--w", `${decoder}%`);
-
       $("#llm-label").textContent = llmText;
-
       $("#ddqn-label").textContent = ddqnText;
-
       $("#browser-label").textContent = browserText;
-
       $("#decoder-label").textContent = decoderText;
-
       $("#llm-status").textContent = llmText.toUpperCase();
-
       $("#ddqn-status").textContent = ddqnText.toUpperCase();
-
     }
-
-
-
-
-
     function updateWafStatusCardForAttack(type, c, normalResult, decoderBlocked, browserExecutable){
-
       // Normalize attack type so the status card updates correctly even if the
-
       // scenario object comes from a manual preset, demo step, or copied payload.
-
       if (type === "manual" || type === "baseline" || type === undefined || type === null) {
-
         if (c.name && c.name.includes("Encoded")) type = "encodedObfuscated";
-
         else if (c.name && c.name.includes("LLM")) type = "llm";
-
         else if (c.name && c.name.includes("DDQN")) type = "ddqn";
-
         else if (c.name && c.name.includes("Normal")) type = "normal";
-
       }
-
-
-
       const cfg = {
-
         normal: {
-
           llm: 0, ddqn: 0, browser: 0, decoder: 100,
-
           llmText: "ready", ddqnText: "online", browserText: "benign", decoderText: "ACTIVE",
-
           mainState: "ACTIVE", modeLabel: "baseline request",
-
           desc: "Normal traffic allowed / no malicious behavior",
-
           status: "GUARDING", decisionWidth: 100, decisionText: "ALLOW", decisionColor: "var(--green)"
-
         },
-
         llm: {
-
           llm: 100, ddqn: 0, browser: browserExecutable ? 100 : 0, decoder: 100,
-
           llmText: "generated", ddqnText: "idle", browserText: browserExecutable ? "verified" : "pending", decoderText: "ACTIVE",
-
           mainState: normalResult === "BLOCKED" ? "NORMAL WAF" : "MONITORING",
-
           modeLabel: `LLM sample / ${Math.round((c.normalWaf?.blockRate || 0) * 100)}% block chance`,
-
           desc: normalResult === "BLOCKED" ? "LLM payload blocked by Normal WAF probabilistic CRS check" : "LLM payload passed Normal WAF this run; Decoder + WAF still checks decoded/raw paths",
-
           status: decoderBlocked ? "BLOCKED" : "MONITORING", decisionWidth: decoderBlocked ? 100 : 65,
-
           decisionText: decoderBlocked ? "Path A∨B" : "MONITOR", decisionColor: decoderBlocked ? "var(--green)" : "var(--yellow)"
-
         },
-
         encodedObfuscated: {
-
           // Show visible activity for this preset too. The rows are reused as
-
           // a compact pipeline indicator: LLM = source payload, DDQN = obfuscation step.
-
           llm: 55, ddqn: 45, browser: browserExecutable ? 100 : 0, decoder: 100,
-
           llmText: "encoded", ddqnText: "obfuscated", browserText: browserExecutable ? "verified" : "pending", decoderText: "ACTIVE",
-
           mainState: normalResult === "BLOCKED" ? "NORMAL WAF" : "DECODER WAF",
-
           modeLabel: `encoded / obfuscated / ${Math.round((c.normalWaf?.blockRate || 0) * 100)}% block chance`,
-
           desc: normalResult === "BLOCKED" ? "Raw CRS blocked this encoded / obfuscated sample" : "Raw CRS missed; decoder normalizes payload before dual-channel detection",
-
           status: decoderBlocked ? "BLOCKED" : "MONITORING", decisionWidth: decoderBlocked ? 100 : 70,
-
           decisionText: decoderBlocked ? "Path A∨B" : "MONITOR", decisionColor: decoderBlocked ? "var(--green)" : "var(--yellow)"
-
         },
-
         ddqn: {
-
           llm: 100, ddqn: 100, browser: browserExecutable ? 100 : 0, decoder: 100,
-
           llmText: "source", ddqnText: "mutated", browserText: browserExecutable ? "verified" : "pending", decoderText: "ACTIVE",
-
           mainState: normalResult === "BLOCKED" ? "NORMAL WAF" : "DECODER WAF",
-
           modeLabel: `DDQN mutation / ${Math.round((c.normalWaf?.blockRate || 0) * 100)}% block chance`,
-
           desc: normalResult === "BLOCKED" ? "Normal WAF caught this DDQN sample in this run" : "Normal WAF missed DDQN mutation; Decoder + WAF blocks through decoded path",
-
           status: decoderBlocked ? "BLOCKED" : "MONITORING", decisionWidth: decoderBlocked ? 100 : 70,
-
           decisionText: decoderBlocked ? "Path A∨B" : "MONITOR", decisionColor: decoderBlocked ? "var(--green)" : "var(--yellow)"
-
         }
-
       }[type] || null;
-
-
-
       if(!cfg) return;
-
-
-
       setProgress(cfg);
-
       $("#waf-main-state").textContent = cfg.mainState;
-
       $("#waf-main-desc").textContent = cfg.desc;
-
       $("#waf-mode-label").textContent = cfg.modeLabel;
-
       $("#waf-status").textContent = cfg.status;
-
       $("#detect-bar").style.setProperty("--w", `${cfg.decisionWidth}%`);
-
       $("#detect-bar").style.setProperty("--c", cfg.decisionColor);
-
       $("#detect-rate").textContent = cfg.decisionText;
-
     }
-
-
-
     async function runFullDemo(){
-
       if(state.demoRunning) return;
-
       state.demoRunning = true;
-
       $("#demo").disabled = true;
-
-
-
       resetAllUI();
-
-
-
       setPhase("STEP 1: LLM GENERATING INITIAL PAYLOAD...");
-
       setProgress({llm: 35, ddqn: 0, browser: 0, llmText: "generating", ddqnText: "waiting", browserText: "pending"});
-
       const llmPayload = {
-
         ...attacks.llm,
-
         name: "LLM Generated Payload",
-
         color: "var(--blue)",
-
         sample: "[LLM GENERATED PAYLOAD]",
-
         decoded: "[DECODED LLM GENERATED PAYLOAD]",
-
         pathA: { crs: false, js: false, header: false, blocked: false },
-
         pathB: { crs: false, blocked: false },
-
         browser: { alert: false, cookie: false, fetch: false }
-
       };
-
       launchPacket(llmPayload);
-
       addAttackLog(llmPayload, rand(40,80), "GENERATED");
-
       addWafLogLine("LLM generated sanitized payload candidate", "info", "llm");
-
       $("#payload-preview").textContent = llmPayload.sample;
-
       await sleep(2200);
-
-
-
       setPhase("STEP 2: DDQN MUTATION PRODUCES STRONGER PAYLOAD...");
-
       setProgress({llm: 100, ddqn: 55, browser: 0, llmText: "done", ddqnText: "mutating", browserText: "pending"});
-
       const ddqnPayload = {
-
         ...attacks.ddqn,
-
         name: "DDQN Mutated Payload",
-
         sample: "[DDQN MUTATED VERSION OF LLM PAYLOAD]",
-
         decoded: "[DECODED DDQN MUTATED PAYLOAD]",
-
         normalWaf: { blocked: false, blockRate: 0, difficulty: "demo-forced", reason: "demo fixed result: raw CRS missed mutation pattern" },
-
         forceNormalWafBlocked: false,
-
         pathA: { crs: false, js: false, header: false, blocked: false },
-
         pathB: { crs: false, blocked: false },
-
         browser: { alert: true, cookie: true, fetch: true }
-
       };
-
       launchPacket(ddqnPayload, true);
-
       addAttackLog(ddqnPayload, rand(80,140), "MUTATED");
-
       addWafLogLine("DDQN mutation selected a bypass candidate", "info", "ddqn");
-
       $("#payload-preview").textContent = ddqnPayload.sample;
-
       await sleep(2600);
-
-
-
       setPhase("STEP 3: BROWSER VERIFICATION CONFIRMS REAL ATTACK BEHAVIOR...");
-
       setProgress({llm: 100, ddqn: 100, browser: 100, llmText: "done", ddqnText: "done", browserText: "verified"});
-
       setBrowserVerification(ddqnPayload.browser, "EXECUTABLE");
-
       $("#raw-payload-label").textContent = ddqnPayload.sample;
-
       $("#decoded-label").textContent = ddqnPayload.decoded;
-
       $("#final-decision-label").textContent = "BROWSER VERIFIED";
-
       addTargetLog("alert / cookie access / fetch behavior detected in safe sandbox", "crit");
-
       addAttackLog(ddqnPayload, rand(50,90), "EXECUTABLE");
-
       await sleep(2600);
-
-
-
       setPhase("STEP 4: NORMAL WAF TEST → SAME PAYLOAD BYPASSES");
-
       $("#waf-mode-label").textContent = "normal waf only";
-
       $("#waf-main-state").textContent = "NORMAL WAF";
-
       $("#waf-main-desc").textContent = "Decoder disabled / raw CRS only";
-
       $("#waf-status").textContent = "BYPASSED";
-
       $("#decoder-label").textContent = "OFF";
-
       $("#decoder-bar").style.setProperty("--w", "0%");
-
       const normalWafBypass = {
-
         ...ddqnPayload,
-
         pathA: { crs: false, js: false, header: false, blocked: false },
-
         pathB: { crs: false, blocked: false }
-
       };
-
       launchPacket(normalWafBypass, true);
-
       setTimeout(() => updateScenario(normalWafBypass, rand(90,160), "normal-waf"), 450);
-
       setTimeout(() => setCompareNormalBypass(normalWafBypass.sample), 620);
-
       await sleep(3200);
-
-
-
       setPhase("STEP 5: ENABLE DECODER + WAF → SAME PAYLOAD BLOCKED");
-
       $("#waf-mode-label").textContent = "dual-channel ready";
-
       $("#waf-main-state").textContent = "ACTIVE";
-
       $("#waf-main-desc").textContent = "Decoder + CRS rule engine running";
-
       $("#waf-status").textContent = "GUARDING";
-
       setProgress({llm: 100, ddqn: 100, browser: 100, decoder: 100, llmText: "done", ddqnText: "done", browserText: "verified", decoderText: "ACTIVE"});
-
       const decoderBlocked = {
-
         ...ddqnPayload,
-
         name: "Same DDQN Payload",
-
         pathA: { crs: true, js: true, header: true, blocked: true },
-
         pathB: { crs: false, blocked: false },
-
         browser: { alert: true, cookie: true, fetch: true }
-
       };
-
       launchPacket(decoderBlocked, true);
-
       setTimeout(() => updateScenario(decoderBlocked, rand(60,120), "decoder"), 450);
-
       setTimeout(() => setCompareDecoderBlock(decoderBlocked.sample), 620);
-
       await sleep(2600);
-
-
-
       setPhase("RESULT: LLM + DDQN PAYLOAD CAN BYPASS NORMAL WAF, BUT DECODER + WAF BLOCKS THE SAME PAYLOAD");
-
       $("#target-state").textContent = "BLOCKED";
-
       $("#target-state").classList.remove("hot");
-
       $("#final-decision-label").textContent = "BLOCKED BY DECODER+WAF";
-
       addWafLogLine("final demo result: same payload blocked after decoder defense enabled", "note", "result");
-
-
-
       state.demoRunning = false;
-
       $("#demo").disabled = false;
-
     }
-
-
-
     $$(".tab").forEach(tab => {
-
       tab.addEventListener("click", () => {
-
         const target = tab.dataset.tab;
-
         $$(".tab").forEach(item => {
-
           const selected = item === tab;
-
           item.classList.toggle("active", selected);
-
           item.setAttribute("aria-selected", String(selected));
-
         });
-
         $$(".tab-page").forEach(page => page.classList.toggle("active", page.id === target));
-
       });
-
     });
-
-
-
     $$(".attack-button").forEach(btn => btn.addEventListener("click", () => runAttack(btn.dataset.attack)));
-
     $$(".opt").forEach(btn => btn.addEventListener("click", () => btn.classList.toggle("active")));
-
     $("#launch-custom").addEventListener("click", () => runAttack("ddqn"));
-
     $("#demo").addEventListener("click", runFullDemo);
-
     $("#export-logs").addEventListener("click", () => addWafLogLine("operator exported sanitized logs", "info", "export=local"));
-
     $("#settings").addEventListener("click", () => addWafLogLine("settings panel opened in simulation", "note", "settings=demo"));
-
-
-
     setClock();
-
     setInterval(setClock, 1000);
-
     setProgress({llm: 0, ddqn: 0, browser: 0, decoder: 100, llmText: "ready", ddqnText: "online", browserText: "pending", decoderText: "ACTIVE"});
-
     resetComparePanel();
-
     updateScenario(attacks.normal, 24);
-
   </script>
-
 </body>
-
 </html>
