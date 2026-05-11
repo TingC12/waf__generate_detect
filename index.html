@@ -122,6 +122,10 @@
     .opt { min-height: 38px; border: 1px solid var(--line); border-radius: 8px; background: var(--panel-2); color: var(--muted); cursor: pointer; padding: 7px; font-size: 11px; }
     .opt.active { color: var(--ink); border-color: rgba(70, 240, 255, 0.5); background: rgba(70, 240, 255, 0.10); }
     .payload-box { min-height: 94px; padding: 12px; border: 1px dashed rgba(70, 240, 255, 0.28); border-radius: 8px; background: rgba(0,0,0,0.24); color: var(--cyan); font-size: 11px; line-height: 1.55; overflow-wrap: anywhere; }
+    .generated-payload-card { margin: 0 14px 14px; padding: 12px; border: 1px solid rgba(70, 240, 255, 0.28); border-radius: 8px; background: rgba(70, 240, 255, 0.055); display: grid; gap: 8px; }
+    .generated-payload-card header { display: flex; justify-content: space-between; align-items: center; gap: 10px; color: var(--muted); font-size: 10px; }
+    .generated-payload-card strong { color: var(--ink); font-size: 12px; }
+    .generated-payload-card .payload-box { min-height: 72px; border-style: solid; background: rgba(0,0,0,0.28); }
     .launch-custom { min-height: 44px; border: 0; border-radius: 8px; background: linear-gradient(90deg, var(--blue), var(--cyan)); color: #061017; font-weight: 800; cursor: pointer; }
 
     .attack-log { display: grid; grid-template-rows: auto minmax(120px, 1fr); border-top: 1px solid var(--line); min-height: 190px; }
@@ -138,6 +142,7 @@
     .battle-zone::after { content: ""; position: absolute; top: 0; bottom: 0; left: 50%; width: 18px; transform: translateX(-50%); background: linear-gradient(180deg, transparent, rgba(70,240,255,0.32), transparent); filter: blur(10px); animation: beam 2.3s ease-in-out infinite; }
     @keyframes beam { 50% { opacity: 0.95; } }
     .battle-label { position: absolute; left: 50%; top: 16px; transform: translateX(-50%); writing-mode: vertical-rl; color: var(--cyan); font-size: 11px; letter-spacing: 0.16em; z-index: 2; }
+    .battle-note { position: absolute; left: 50%; bottom: 18px; width: 58px; transform: translateX(-50%); color: var(--muted); font-size: 9px; line-height: 1.45; text-align: center; z-index: 2; }
     .packet { position: absolute; top: -24px; left: calc(50% - 9px); width: 18px; height: 18px; border: 2px solid var(--packet-color); border-radius: 5px; background: rgba(7, 11, 16, 0.9); box-shadow: 0 0 20px color-mix(in srgb, var(--packet-color), transparent 25%); z-index: 5; animation: packet-drop 1.2s cubic-bezier(.2,.82,.28,1) forwards; }
     @keyframes packet-drop { 0% { transform: translate(-8px, -28px) rotate(0deg); opacity: 0; } 10%,86% { opacity: 1; } 100% { transform: translate(var(--drift), calc(100vh - 265px)) rotate(180deg); opacity: 0; } }
     .explosion { position: absolute; left: 50%; bottom: 34px; width: 12px; height: 12px; border-radius: 50%; border: 2px solid var(--blast-color); transform: translate(-50%, 0); z-index: 6; animation: blast 620ms ease-out forwards; pointer-events: none; }
@@ -217,6 +222,10 @@
 
 
     .comparison-panel { padding: 14px; border-bottom: 1px solid var(--line); background: rgba(0,0,0,0.10); }
+    .comparison-title { display: flex; justify-content: space-between; align-items: end; gap: 12px; margin-bottom: 12px; }
+    .comparison-title h3 { margin: 0 0 4px; font-size: 16px; }
+    .comparison-title p { margin: 0; color: var(--muted); font-size: 11px; line-height: 1.45; }
+    .comparison-title span { color: var(--cyan); font-size: 10px; font-weight: 800; white-space: nowrap; }
     .comparison-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
     .compare-card { position: relative; border: 1px solid var(--line); border-radius: 10px; background: rgba(0,0,0,0.22); overflow: hidden; min-height: 190px; }
     .compare-card.left { border-color: rgba(255,92,122,.38); box-shadow: inset 0 0 28px rgba(255,92,122,.05); }
@@ -239,6 +248,7 @@
       .status-cluster { grid-template-columns: repeat(4, minmax(120px, 1fr)); min-width: 0; }
       .battle-zone { min-height: 130px; }
       .battle-label { writing-mode: horizontal-tb; }
+      .battle-note { width: auto; left: 18px; right: 18px; bottom: 16px; transform: none; }
       .battle-zone::before { inset: 50% 18px auto 18px; width: auto; height: 1px; transform: translateY(-0.5px); background: repeating-linear-gradient(90deg, rgba(70,240,255,0.65) 0 10px, transparent 10px 22px); }
       .battle-zone::after { inset: 50% 0 auto 0; height: 18px; width: auto; transform: translateY(-50%); }
     }
@@ -262,7 +272,7 @@
           <h1>WAF-AI BATTLE LAB</h1>
           <span class="live-pill"><span class="status-dot"></span>LIVE</span>
         </div>
-        <div class="subtitle">LLM / DDQN Payload Simulation with Browser Verification and Decoder + WAF Defense</div>
+        <div class="subtitle">Generate payloads, verify browser behavior, then compare Normal WAF vs Decoder + WAF on the same payload</div>
       </div>
       <section class="status-cluster" aria-label="system status">
         <div class="status-light"><span class="status-dot blue"></span><div><b>LLM Generator</b><span id="llm-status">READY</span></div></div>
@@ -276,19 +286,19 @@
       <section class="panel attacker-panel" aria-labelledby="attacker-title">
         <div class="panel-title">
           <div>
-            <h2 id="attacker-title">ATTACKER PANEL</h2>
-            <p>安全研究模擬台。所有 payload 皆遮罩，只顯示分類、技術鏈與防禦結果。</p>
+            <h2 id="attacker-title">PAYLOAD GENERATOR</h2>
+            <p>選擇快速預設來生成安全示範 payload，接著送進 Browser Verification 與 WAF 比較流程。</p>
           </div>
           <span class="micro-badge">SANITIZED</span>
         </div>
 
         <section class="demo-control">
-          <button class="demo-button" type="button" id="demo">▶ DEMO</button>
-          <div class="demo-phase-mini" id="demo-phase-mini">READY：按下後會自動展示 LLM 生成 → DDQN 變異 → Browser Verification → Normal WAF Bypass → Decoder + WAF Block。</div>
+          <button class="demo-button" type="button" id="demo">GENERATE PAYLOAD & RUN COMPARISON</button>
+          <div class="demo-phase-mini" id="demo-phase-mini">READY：LLM 先生成 payload，DDQN 再變異，Browser Verification 確認行為，最後用同一個 payload 比較 Normal WAF 與 Decoder + WAF。</div>
         </section>
 
         <nav class="tabs" role="tablist" aria-label="attacker modes">
-          <button class="tab active" type="button" role="tab" aria-selected="true" data-tab="presets">快速預設</button>
+          <button class="tab active" type="button" role="tab" aria-selected="true" data-tab="presets">快速生成預設</button>
           <button class="tab" type="button" role="tab" aria-selected="false" data-tab="builder" style="display:none;">
             固定樣本集
           </button>
@@ -303,17 +313,17 @@
             </button>
             <button class="attack-button" type="button" data-attack="llm" style="--attack-color: var(--violet);">
               <span class="attack-icon">L</span>
-              <span class="attack-copy"><strong>LLM Generated Malicious Payload</strong><span>LLM 生成的惡意樣本。</span></span>
+              <span class="attack-copy"><strong>LLM Generated Payload</strong><span>由 LLM 生成初始測試 payload，作為後續變異的來源。</span></span>
               <span class="attack-meta">SAMPLE A</span>
             </button>
             <button class="attack-button" type="button" data-attack="encodedObfuscated" style="--attack-color: var(--yellow);">
               <span class="attack-icon">E/O</span>
-              <span class="attack-copy"><strong>Encoded + Obfuscated Payload</strong><span>編碼與混淆樣本。</span></span>
+              <span class="attack-copy"><strong>Encoded + Obfuscated Payload</strong><span>在生成 payload 上加入編碼與混淆，用來測試 raw-only WAF。</span></span>
               <span class="attack-meta">SAMPLE B</span>
             </button>
             <button class="attack-button" type="button" data-attack="ddqn" style="--attack-color: var(--blue);">
               <span class="attack-icon">D</span>
-              <span class="attack-copy"><strong>DDQN Mutated Payload</strong><span>DDQN 變異樣本。</span></span>
+              <span class="attack-copy"><strong>DDQN Mutated Payload</strong><span>DDQN 變異策略產生更強的 bypass candidate。</span></span>
               <span class="attack-meta">SAMPLE C</span>
             </button>
           </div>
@@ -339,14 +349,22 @@
             </div>
             <div class="builder-group">
               <label>Payload 樣本預覽（遮罩）</label>
-              <div class="payload-box" id="payload-preview">[NORMAL REQUEST SAMPLE]</div>
+              <div class="payload-box" id="builder-payload-preview">[NORMAL REQUEST SAMPLE]</div>
             </div>
             <button class="launch-custom" type="button" id="launch-custom">RUN FIXED SAFE SAMPLE</button>
           </div>
         </div>
 
+        <section class="generated-payload-card" aria-label="generated payload preview">
+          <header>
+            <strong>Generated Payload Preview</strong>
+            <span>sanitized demo sample</span>
+          </header>
+          <div class="payload-box" id="payload-preview">[NORMAL REQUEST SAMPLE]</div>
+        </section>
+
         <section class="attack-log" aria-labelledby="attack-log-title">
-          <header><strong id="attack-log-title">攻擊日誌</strong><span id="last-response">last response 24ms</span></header>
+          <header><strong id="attack-log-title">Payload generation log</strong><span id="last-response">last response 24ms</span></header>
           <div class="attack-log-list" id="attack-log-list" aria-live="polite">
             <div class="attack-log-line"><span>00:00:00</span><span class="result-pill info">READY</span><strong>Demo Ready</strong><span>--</span></div>
           </div>
@@ -355,13 +373,14 @@
 
       <section class="battle-zone" aria-label="battle zone">
         <div class="battle-label">DUAL PATH CHECK</div>
+        <div class="battle-note">Raw payload + decoded payload checked in parallel</div>
       </section>
 
       <section class="panel defender-panel" id="defender-panel" aria-labelledby="defender-title">
         <div class="panel-title">
           <div>
-            <h2 id="defender-title">DEFENDER PANEL</h2>
-            <p>Decoder + WAF Dual-Channel Detection：Path A 或 Path B 任一路徑命中即封鎖。</p>
+            <h2 id="defender-title">SAME PAYLOAD, TWO DEFENSE PATHS</h2>
+            <p>Normal WAF 只看原始請求；Decoder + WAF 會同時檢查 raw payload 與 decoded payload，任一路徑命中即封鎖。</p>
           </div>
           <span class="micro-badge" id="defense-mode">GUARDING</span>
         </div>
@@ -369,6 +388,13 @@
         <div class="demo-phase" id="demo-phase">READY</div>
 
         <section class="comparison-panel" aria-label="normal waf versus decoder waf comparison">
+          <div class="comparison-title">
+            <div>
+              <h3>Defense Comparison</h3>
+              <p>追蹤同一個生成 payload：raw-only WAF 與 dual-path decoded inspection 的結果差異。</p>
+            </div>
+            <span>SAME PAYLOAD</span>
+          </div>
           <div class="comparison-grid">
             <div class="compare-card left dimmed" id="normal-compare-card">
               <div class="compare-head">
@@ -946,7 +972,7 @@
 
       resetAllUI();
 
-      setPhase("STEP 1: LLM GENERATING INITIAL PAYLOAD...");
+      setPhase("STEP 1: LLM GENERATES THE INITIAL PAYLOAD");
       setProgress({llm: 35, ddqn: 0, browser: 0, llmText: "generating", ddqnText: "waiting", browserText: "pending"});
       const llmPayload = {
         ...attacks.llm,
@@ -964,7 +990,7 @@
       $("#payload-preview").textContent = llmPayload.sample;
       await sleep(2200);
 
-      setPhase("STEP 2: DDQN MUTATION PRODUCES STRONGER PAYLOAD...");
+      setPhase("STEP 2: DDQN MUTATES THE GENERATED PAYLOAD");
       setProgress({llm: 100, ddqn: 55, browser: 0, llmText: "done", ddqnText: "mutating", browserText: "pending"});
       const ddqnPayload = {
         ...attacks.ddqn,
@@ -983,7 +1009,7 @@
       $("#payload-preview").textContent = ddqnPayload.sample;
       await sleep(2600);
 
-      setPhase("STEP 3: BROWSER VERIFICATION CONFIRMS REAL ATTACK BEHAVIOR...");
+      setPhase("STEP 3: BROWSER VERIFICATION CONFIRMS EXECUTABLE BEHAVIOR");
       setProgress({llm: 100, ddqn: 100, browser: 100, llmText: "done", ddqnText: "done", browserText: "verified"});
       setBrowserVerification(ddqnPayload.browser, "EXECUTABLE");
       $("#raw-payload-label").textContent = ddqnPayload.sample;
@@ -993,7 +1019,7 @@
       addAttackLog(ddqnPayload, rand(50,90), "EXECUTABLE");
       await sleep(2600);
 
-      setPhase("STEP 4: NORMAL WAF TEST → SAME PAYLOAD BYPASSES");
+      setPhase("STEP 4: NORMAL WAF TEST - SAME PAYLOAD BYPASSES");
       $("#waf-mode-label").textContent = "normal waf only";
       $("#waf-main-state").textContent = "NORMAL WAF";
       $("#waf-main-desc").textContent = "Decoder disabled / raw CRS only";
@@ -1010,7 +1036,7 @@
       setTimeout(() => setCompareNormalBypass(normalWafBypass.sample), 620);
       await sleep(3200);
 
-      setPhase("STEP 5: ENABLE DECODER + WAF → SAME PAYLOAD BLOCKED");
+      setPhase("STEP 5: DECODER + WAF TEST - SAME PAYLOAD BLOCKED");
       $("#waf-mode-label").textContent = "dual-channel ready";
       $("#waf-main-state").textContent = "ACTIVE";
       $("#waf-main-desc").textContent = "Decoder + CRS rule engine running";
@@ -1028,7 +1054,7 @@
       setTimeout(() => setCompareDecoderBlock(decoderBlocked.sample), 620);
       await sleep(2600);
 
-      setPhase("RESULT: LLM + DDQN PAYLOAD CAN BYPASS NORMAL WAF, BUT DECODER + WAF BLOCKS THE SAME PAYLOAD");
+      setPhase("RESULT: GENERATED PAYLOAD BYPASSES NORMAL WAF, BUT DECODER + WAF BLOCKS THE SAME PAYLOAD");
       $("#target-state").textContent = "BLOCKED";
       $("#target-state").classList.remove("hot");
       $("#final-decision-label").textContent = "BLOCKED BY DECODER+WAF";
