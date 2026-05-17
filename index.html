@@ -1072,7 +1072,7 @@
 
 
     .flow-panel { display: grid; gap: 12px; padding: 14px; align-content: start; }
-    .prompt-box { width: 100%; min-height: 82px; resize: vertical; border: 1px solid var(--line); border-radius: 8px; background: rgba(0,0,0,.24); color: var(--ink); padding: 12px; font: inherit; font-size: 11px; line-height: 1.55; outline: none; }
+    .prompt-box { width: 100%; min-height: 220px; resize: vertical; border: 1px solid var(--line); border-radius: 8px; background: rgba(0,0,0,.24); color: var(--ink); padding: 12px; font: inherit; font-size: 11px; line-height: 1.55; outline: none; }
     .prompt-box:focus { border-color: var(--line-hot); box-shadow: 0 0 0 1px rgba(70,240,255,.18); }
     .flow-steps { display: grid; gap: 9px; }
     .flow-step { border: 1px solid var(--line); border-left: 4px solid var(--dim); border-radius: 8px; background: rgba(0,0,0,.18); padding: 11px; display: grid; gap: 7px; }
@@ -1355,7 +1355,6 @@
 
             "請只輸出 payload 字串，每一筆一行，不要加入任何解釋、描述或標示，除了 HTML 標籤本身外，不要加入任何文字，輸出的起始以及結尾不要輸出 ```
             或是 ```html 來分隔請直接輸出 payload ，不要重複輸出相同的 payload "\n
-                )
 
             原始 payload:
             {payload}
