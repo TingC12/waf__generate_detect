@@ -1346,7 +1346,26 @@
 
         <div class="flow-panel">
           <label class="payload-label" for="prompt-input"><span>Prompt Input</span><span>輸入生成需求</span></label>
-          <textarea id="prompt-input" class="prompt-box">Generate a browser-verifiable XSS research payload for a sandbox WAF test.</textarea>
+          <textarea id="prompt-input" class="prompt-box"> "請把我提供的 payload 變異出 20 筆能透過 innerHTML 發生的 DOM-based XSS，主義變異技術可以參考：\n"
+
+            1.編碼變異 - Unicode、十六進制、八進制、HTML 實體\n
+            2.語法變異 - 大小寫混淆、空白字符插入、屬性順序\n
+            3.JavaScript 技巧 - 模板字面量、fromCharCode、constructor\n
+            4.分隔技術 - 註釋、多層編碼、atob\n
+
+            "請只輸出 payload 字串，每一筆一行，不要加入任何解釋、描述或標示，除了 HTML 標籤本身外，不要加入任何文字，輸出的起始以及結尾不要輸出 ```
+            或是 ```html 來分隔請直接輸出 payload ，不要重複輸出相同的 payload "\n
+                )
+
+            原始 payload:
+            {payload}
+
+            crs所觸發的id:
+            {rule_ids}
+
+            請迴避以下 crs 的條件、運算子、比對樣式、轉換等檢測手段:
+            {rule_refs}
+          </textarea>
 
           <div class="action-row">
             <button class="small-button" type="button" id="btn-llm">1. LLM 生成</button>
