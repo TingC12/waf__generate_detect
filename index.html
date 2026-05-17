@@ -1324,7 +1324,7 @@
           <h1>WAF-AI BATTLE LAB</h1>
           <span class="live-pill"><span class="status-dot"></span>LIVE</span>
         </div>
-        <div class="subtitle">生成式 Payload Pipeline × Dual Path Defense Verification</div>
+        <div class="subtitle">AI-Driven Payload Generation vs Dual-Path WAF Defense</div>
       </div>
       <section class="status-cluster" aria-label="system status">
         <div class="status-light"><span class="status-dot blue"></span><div><b>LLM Generator</b><span>PROMPT READY</span></div></div>
@@ -1339,7 +1339,7 @@
         <div class="panel-title">
           <div>
             <h2 id="generator-title">生成流程</h2>
-            <p>Prompt → LLM Payload → Browser 驗證 → LLM 變異 → DDQN 變異。</p>
+            <p>Payload 會經過生成、驗證與多階段變異，逐步提升繞過能力。</p>
           </div>
           <span class="micro-badge">GENERATION</span>
         </div>
@@ -1349,27 +1349,27 @@
           <textarea id="prompt-input" class="prompt-box">Generate a browser-verifiable XSS research payload for a sandbox WAF test.</textarea>
 
           <div class="action-row">
-            <button class="small-button primary" type="button" id="btn-llm">1. LLM 生成</button>
+            <button class="small-button" type="button" id="btn-llm">1. LLM 生成</button>
             <button class="small-button" type="button" id="btn-mut">2. LLM 變異</button>
             <button class="small-button" type="button" id="btn-ddqn">3. DDQN 再變異</button>
           </div>
 
           <div class="flow-steps">
-            <div class="flow-step active" id="step-prompt"><strong>Prompt → LLM</strong><span>根據輸入需求生成初始攻擊payload。</span></div>
-            <div class="flow-step" id="step-llm"><strong>Initial Payload Detection</strong><span>原始 payload 送入 WAF 與 Decoder+WAF 進行初步檢測。</span></div>
-            <div class="flow-step" id="step-browser"><strong>Browser Verification</strong><span>驗證payload是否仍具備可執行的攻擊行為。</span></div>
-            <div class="flow-step" id="step-mut"><strong>LLM-Based Mutation</strong><span>利用 LLM 進行 encoding 與 obfuscation 變異，嘗試繞過規則。</span></div>
-            <div class="flow-step" id="step-ddqn"><strong>DDQN-Based Optimization</strong><span>使用 DDQN 持續學習 WAF 回饋並優化 payload 繞過策略。</span></div>
+            <div class="flow-step active" id="step-prompt"><strong>Prompt → LLM</strong><span>根據輸入需求，自動生成初始攻擊 payload。</span></div>
+            <div class="flow-step" id="step-llm"><strong>LLM Generated Payload</strong><span>原始 payload 通常會被 WAF 與 Decoder+WAF 偵測。</span></div>
+            <div class="flow-step" id="step-browser"><strong>Browser Verification</strong><span>驗證 payload 是否仍具備真實攻擊能力。</span></div>
+            <div class="flow-step" id="step-mut"><strong>LLM Mutation</strong><span>透過 encoding 與 obfuscation 進行第一次規避變異。</span></div>
+            <div class="flow-step" id="step-ddqn"><strong>DDQN Mutation</strong><span>根據 WAF 回饋持續學習並優化繞過策略。</span></div>
           </div>
 
           <div class="payload-view">
             <div class="payload-label"><span id="payload-title">Payload 欄位</span><span id="payload-source">等待生成</span></div>
-            <div class="payload-box real" id="payload-preview">按下 LLM 生成後，會從 llm_payload.txt 選一筆展示。</div>
+            <div class="payload-box real" id="payload-preview">Payload generation result will be displayed here.</div>
           </div>
         </div>
 
         <section class="attack-log" aria-labelledby="gen-log-title">
-          <header><strong id="gen-log-title">生成紀錄</strong><span id="last-response">ready</span></header>
+          <header><strong id="gen-log-title">Payload Evolution Log</strong><span id="last-response">ready</span></header>
           <div class="attack-log-list" id="attack-log-list" aria-live="polite">
             <div class="attack-log-line"><span>00:00:00</span><span class="result-pill info">READY</span><strong>waiting for prompt</strong><span>--</span></div>
           </div>
@@ -1383,8 +1383,8 @@
       <section class="panel defender-panel" id="defender-panel" aria-labelledby="defender-title">
         <div class="panel-title">
           <div>
-            <h2 id="defender-title">右側：防禦驗證</h2>
-            <p>每個 payload 先通過 Browser 驗證，再進入 WAF 與 WAF+Decoder 雙路徑檢測。</p>
+            <h2 id="defender-title">防禦驗證</h2>
+            <p>驗證攻擊有效性後，同時送入 Normal WAF 與 Decoder+WAF。</p>
           </div>
           <span class="micro-badge" id="defense-mode">DUAL PATH CHECK</span>
         </div>
@@ -1395,7 +1395,7 @@
             <div class="waf-card-body">
               <div class="defense-result-grid">
                 <div class="result-card normal">
-                  <div class="result-card-head"><h3>Normal WAF</h3><span>decoder disabled</span></div>
+                  <div class="result-card-head"><h3>Normal WAF</h3><span>Signature-Based Detection</span></div>
                   <div class="result-detail-list">
                     <div class="result-detail-row"><b>Input</b><span id="normal-input">[WAITING PAYLOAD]</span><em>same payload</em></div>
                     <div class="result-detail-row"><b>Browser</b><span id="normal-browser">waiting browser verification</span><em>pending</em></div>
@@ -1404,7 +1404,7 @@
                   <div class="status-word" id="waf-result">WAIT</div>
                 </div>
                 <div class="result-card decoder">
-                  <div class="result-card-head"><h3>Decoder + WAF</h3><span>dual-channel enabled</span></div>
+                  <div class="result-card-head"><h3>Decoder + WAF</h3><span>Dual-Path Decoding Defense</span></div>
                   <div class="result-detail-list">
                     <div class="result-detail-row"><b>Input</b><span id="decoder-input">[WAITING PAYLOAD]</span><em>same payload</em></div>
                     <div class="result-detail-row"><b>Path A</b><span id="decoder-path-a-text">waiting decoded check</span><em id="decoder-path-a-mark">pending</em></div>
@@ -1426,10 +1426,10 @@
                     <div class="score-ring"><span id="browser-icon">0%</span><small>VERDICT</small></div>
                   </div>
                   <div class="browser-metrics">
-                    <div class="browser-metric"><span>alert()</span><strong id="browser-alert">not triggered</strong></div>
-                    <div class="browser-metric"><span>cookie access</span><strong id="browser-cookie">no</strong></div>
-                    <div class="browser-metric"><span>fetch request</span><strong id="browser-fetch">no</strong></div>
-                    <div class="browser-metric"><span>browser verdict</span><strong id="browser-verdict">not executable</strong></div>
+                    <div class="browser-metric"><span>Script Execution</span><strong id="browser-alert">not verified</strong></div>
+                    <div class="browser-metric"><span>Cookie Access</span><strong id="browser-cookie">not detected</strong></div>
+                    <div class="browser-metric"><span>External Request</span><strong id="browser-fetch">not detected</strong></div>
+                    <div class="browser-metric"><span>Browser Verdict</span><strong id="browser-verdict">pending</strong></div>
                   </div>
                 </div>
                 <div class="browser-data-rows">
@@ -1440,14 +1440,14 @@
               </div>
             </div>
             <div class="target-log-block">
-              <div class="subhead" style="border:0;padding:0;min-height:0;"><h3>靶機 log</h3><span>target telemetry</span></div>
+              <div class="subhead" style="border:0;padding:0;min-height:0;"><h3>Runtime Telemetry</h3><span>target telemetry</span></div>
               <div class="target-log-list" id="target-log-list" aria-live="polite">
                 <div class="target-log-line"><span>00:00:00</span><span class="sev note">NOTE</span><b>target idle, browser verifier ready</b></div>
               </div>
             </div>
           </section>
 
-          <div class="hidden-runtime aria-hidden="true">
+          <div class="hidden-runtime" aria-hidden="true">
             <span id="path-a">READY</span><span id="path-b">READY</span><span id="path-final">READY</span>
             <span id="stat-total">0</span><span id="stat-browser">0</span><span id="stat-waf">0</span><span id="stat-decoder">0</span>
             <div id="waf-log-list"></div>
@@ -1523,10 +1523,10 @@
       $('#browser-state').style.color = 'var(--red)';
       $('#browser-icon').textContent = '100%';
       $('#browser-score').style.setProperty('--score-bg', 'rgba(255,92,122,.88)');
-      $('#browser-alert').textContent = 'triggered';
-      $('#browser-cookie').textContent = stageName.includes('DDQN') || stageName.includes('Mutated') ? 'yes' : 'no';
-      $('#browser-fetch').textContent = 'no';
-      $('#browser-verdict').textContent = 'executable';
+      $('#browser-alert').textContent = 'TRIGGERED';
+      $('#browser-cookie').textContent = stageName.includes('DDQN') || stageName.includes('Mutated') ? 'DETECTED' : 'NOT DETECTED';
+      $('#browser-fetch').textContent = 'BLOCKED';
+      $('#browser-verdict').textContent = 'VERIFIED';
       state.browser += 1;
     }
 
@@ -1542,44 +1542,62 @@
 
     function setDefense(stageName, wafBypass, decoderBypass) {
       state.total += 1;
-      if (wafBypass) state.wafBypass += 1;
-      if (decoderBypass) state.decoderBypass += 1;
+
+      // Normal WAF result
+      const normalAllowed = wafBypass;
+
+      // Decoder+WAF uses OR logic:
+      // Path B = original payload checked by Normal WAF
+      // Path A = decoded payload checked by Decoder+WAF
+      // Final decision = Path A OR Path B. If either path blocks, final result is BLOCKED.
+      const pathBBlocked = !normalAllowed;
+      const decoderAllowed = normalAllowed && decoderBypass;
+      const pathABlocked = normalAllowed ? !decoderAllowed : false;
+      const finalBlocked = pathABlocked || pathBBlocked;
+      const finalAllowed = !finalBlocked;
+
+      if (normalAllowed) state.wafBypass += 1;
+      if (finalAllowed) state.decoderBypass += 1;
+
       $('#stage-label').textContent = stageName;
       const payloadLabel = stageName === 'LLM 原始生成' ? '[LLM GENERATED PAYLOAD]' : stageName === 'LLM 變異' ? '[LLM MUTATED PAYLOAD]' : '[DDQN MUTATED PAYLOAD]';
-      const normalAllowed = wafBypass;
-      const decoderAllowed = decoderBypass;
       $('#normal-input').textContent = payloadLabel;
       $('#decoder-input').textContent = payloadLabel;
-      $('#normal-browser').textContent = 'attack behavior confirmed in browser sandbox';
-      $('#normal-waf-check').textContent = normalAllowed ? 'signature not matched, request passed WAF' : 'signature matched, request blocked by WAF';
-      $('#normal-waf-mark').textContent = normalAllowed ? 'no match' : 'matched';
+
+      $('#normal-browser').textContent = 'browser verification confirmed attack behavior';
+      $('#normal-waf-check').textContent = normalAllowed ? 'Normal WAF allowed the original payload' : 'Normal WAF matched the payload and blocked it';
+      $('#normal-waf-mark').textContent = normalAllowed ? 'allowed' : 'blocked';
       $('#waf-result').textContent = normalAllowed ? 'ALLOWED' : 'BLOCKED';
       $('#waf-result').className = `status-word ${normalAllowed ? 'allowed' : 'block'}`;
-      $('#decoder-path-a-text').textContent = decoderAllowed ? 'decoded payload not matched' : 'decoded payload matched attack pattern';
-      $('#decoder-path-a-mark').textContent = decoderAllowed ? 'not matched' : 'matched';
-      $('#decoder-path-b-text').textContent = normalAllowed ? 'original payload not matched by normal CRS' : 'original payload matched by normal CRS';
-      $('#decoder-path-b-mark').textContent = normalAllowed ? 'not matched' : 'matched';
-      $('#decoder-result').textContent = decoderAllowed ? 'ALLOWED' : 'BLOCKED';
-      $('#decoder-result').className = `status-word ${decoderAllowed ? 'allowed' : 'block'}`;
-      $('#browser-state').textContent = decoderAllowed ? 'BYPASSED DECODER+WAF' : 'BLOCKED BY DECODER+WAF';
-      $('#browser-state').style.color = decoderAllowed ? 'var(--green)' : 'var(--red)';
+
+      $('#decoder-path-a-text').textContent = pathABlocked ? 'decoded payload matched attack pattern' : 'decoded payload passed decoded-path check';
+      $('#decoder-path-a-mark').textContent = pathABlocked ? 'blocked' : 'allowed';
+      $('#decoder-path-b-text').textContent = pathBBlocked ? 'original payload blocked by Normal WAF path' : 'original payload passed Normal WAF path';
+      $('#decoder-path-b-mark').textContent = pathBBlocked ? 'blocked' : 'allowed';
+      $('#decoder-result').textContent = finalAllowed ? 'ALLOWED' : 'BLOCKED';
+      $('#decoder-result').className = `status-word ${finalAllowed ? 'allowed' : 'block'}`;
+
+      $('#browser-state').textContent = finalAllowed ? 'BYPASSED DECODER+WAF' : 'BLOCKED BY DECODER+WAF';
+      $('#browser-state').style.color = finalAllowed ? 'var(--green)' : 'var(--red)';
       $('#browser-incoming').textContent = payloadLabel;
       $('#browser-decoder-output').textContent = stageName === 'LLM 原始生成' ? '[NORMALIZED LLM PAYLOAD]' : stageName === 'LLM 變異' ? '[DECODED AND NORMALIZED MUTATED PAYLOAD]' : '[DECODED AND NORMALIZED DDQN PAYLOAD]';
-      $('#browser-final-decision').textContent = decoderAllowed ? 'ALLOWED' : 'BLOCKED BY DECODER+WAF';
-      $('#path-a').textContent = decoderAllowed ? 'MISS' : 'HIT';
-      $('#path-a').className = `sev ${decoderAllowed ? 'warn' : 'note'}`;
-      $('#path-b').textContent = normalAllowed ? 'MISS' : 'HIT';
-      $('#path-b').className = `sev ${normalAllowed ? 'warn' : 'note'}`;
-      $('#path-final').textContent = decoderAllowed ? 'BYPASS' : 'BLOCK';
-      $('#path-final').className = `sev ${decoderAllowed ? 'crit' : 'note'}`;
-      $('#defense-mode').textContent = decoderBypass ? 'BYPASS FOUND' : 'DUAL PATH CHECK';
+      $('#browser-final-decision').textContent = finalAllowed ? 'ALLOWED BY BOTH PATHS' : 'BLOCKED BY PATH A OR PATH B';
+
+      $('#path-a').textContent = pathABlocked ? 'BLOCK' : 'PASS';
+      $('#path-a').className = `sev ${pathABlocked ? 'crit' : 'note'}`;
+      $('#path-b').textContent = pathBBlocked ? 'BLOCK' : 'PASS';
+      $('#path-b').className = `sev ${pathBBlocked ? 'crit' : 'note'}`;
+      $('#path-final').textContent = finalAllowed ? 'BYPASS' : 'BLOCK';
+      $('#path-final').className = `sev ${finalAllowed ? 'crit' : 'note'}`;
+      $('#defense-mode').textContent = finalAllowed ? 'BYPASS FOUND' : 'DUAL PATH CHECK';
+
       $('#stat-total').textContent = state.total;
       $('#stat-browser').textContent = state.browser;
       $('#stat-waf').textContent = state.wafBypass;
       $('#stat-decoder').textContent = state.decoderBypass;
-      addLog(decoderBypass ? 'CRIT' : wafBypass ? 'WARN' : 'NOTE', `${stageName}: WAF=${wafBypass ? 'bypass' : 'block'}, Decoder=${decoderBypass ? 'bypass' : 'block'}`, `id=${rand(941100, 949999)}`);
-      addTargetLog(decoderBypass ? 'CRIT' : 'NOTE', decoderBypass ? 'browser verified payload, decoder+WAF bypass visualized' : 'browser verified payload, blocked before target impact');
-      launchPacket(wafBypass || decoderBypass);
+      addLog(finalAllowed ? 'CRIT' : normalAllowed ? 'WARN' : 'NOTE', `${stageName}: Normal WAF=${normalAllowed ? 'allow' : 'block'}, Path A=${pathABlocked ? 'block' : 'allow'}, Path B=${pathBBlocked ? 'block' : 'allow'}`, `id=${rand(941100, 949999)}`);
+      addTargetLog(finalAllowed ? 'CRIT' : 'NOTE', finalAllowed ? 'browser verified payload, decoder+WAF bypass visualized' : 'browser verified payload, blocked by dual-path defense');
+      launchPacket(normalAllowed || finalAllowed);
       const defender = $('#defender-panel');
       defender.classList.add('flash');
       setTimeout(() => defender.classList.remove('flash'), 520);
@@ -1614,7 +1632,8 @@
       if (!state.currentPayload) runLLM();
       state.stage = 'mut';
       const wafBypass = Math.random() < 0.15;
-      const decoderBypass = Math.random() < 0.10;
+      // WAF+Decoder 更嚴格：必須先通過 Normal WAF，才有可能通過 Decoder+WAF。
+      const decoderBypass = wafBypass && Math.random() < (0.10 / 0.15);
       state.currentPayload = mutatePayload(state.currentPayload);
       setStep('#step-llm', 'pass'); setStep('#step-browser', 'pass'); setStep('#step-mut', wafBypass || decoderBypass ? 'bypass' : 'fail');
       showPayload('LLM Mutated Payload', 'LLM mutation demo', state.currentPayload);
@@ -1629,7 +1648,8 @@
       const idx = state.llmIndex % state.ddqnPayloads.length;
       state.currentPayload = state.ddqnPayloads[idx];
       const wafBypass = Math.random() < 0.75;
-      const decoderBypass = Math.random() < 0.25;
+      // WAF+Decoder 更嚴格：必須先通過 Normal WAF，才有可能通過 Decoder+WAF。
+      const decoderBypass = wafBypass && Math.random() < (0.25 / 0.75);
       setStep('#step-browser', 'pass'); setStep('#step-mut', 'fail'); setStep('#step-ddqn', wafBypass || decoderBypass ? 'bypass' : 'fail');
       showPayload('DDQN Mutated Payload', `ddqn.txt #${idx + 1} 對應 LLM #${state.llmIndex + 1}`, state.currentPayload);
       verifyBrowser('DDQN Mutated Payload');
